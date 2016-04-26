@@ -1,6 +1,6 @@
 # Donacha.in
 Donations through DAO's
-GENERAL 
+ 
 An open source smart contract for Dao’s donations. 
 
 Contract could be integrated with DAO’s so it could share revenues with charities selected by the members. 
