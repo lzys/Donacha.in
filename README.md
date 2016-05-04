@@ -1,41 +1,50 @@
 # Donacha.in
-Donations through DAO's
+Donations through DAOs:
  
-An open source smart contract for Dao’s donations. 
+An open source smart contract to manage a DAO’s charitable donations. 
 
-Contract could be integrated with DAO’s so it could share revenues with charities selected by the members. 
+Contract could be integrated with a DAO so it could share revenues with charities selected by the members. 
 
-Conversion to fiat and donation to any approved charities around the world 
+Conversion to fiat and donation to any approved charities around the world.
 
 DAO’s token holders would vote if, how much, how often and who to donate to. 
 
 
-Donacha.in Dao PROPOSAL:
 
-Adding a multisig address to whitelist - smart contract to accept portion of the reward tokens 
+Donacha.in PROPOSAL to The DAO:
 
-Whitelisted address is a smart contract. It reciecves funds from reward tokens, converts to fiat (exchanges api) and distributed to mentioned charities (via justgiving api or any other online to offline donations).
+The DAO is ushering in a revolutionary restructuring of the economy, one based on decrentralisation and transparency. Many are hopeful that it'll make the world a more equitable, better place. True to this end, having a system where a small portion of investor profits are automatically and directly distributed to some of the world's best causes (as voted on by members of The DAO) seems fitting.
 
-The rewardtokens for chairty are distibuted annually. Dao members would be able to submit a proposal to the Smart contract,
-to vote\choose 3 charities to donate to.  
+Adding a multisig address to whitelist - smart contract to accept portion of the reward tokens (e.g. 1% of profit).
 
-Address is multisig and private keys held by DAO curators and an outside agreed organizations (possibly Donachain Curators)
+Whitelisted address is a smart contract. It reciecves funds from reward tokens, converts to fiat (exchanges API) and distributed to chosen charities (e.g. via JustGiving API).
+
+The reward tokens for charity are distibuted annually. DAO members would be able to submit a proposal to the smart contract, e.g. to vote for 5 causes to donate to in a 30/25/20/15/10 split, from a list made up of entries put forward by DAO members.
+
+Address is multisig and private keys held by DAO curators and an outside agreed organization (possibly Donachain Curators)
 
 Track donation from blockchain explorer and charity receipt. 
 
+An opt-out clause to give DAO members the option to re-allocate their donations either back to themselves, or somewhere else. Would require a simple nominal transaction (i.e. gas only) to be made manually (default is that 1% of profit is donated). This is analagous to being able to take ETH out of the DAO - i.e. it minimises downside of proposal (but wouldn't effect membership of The DAO).
+
 TBD
 
-Whitelist address has extrabalance account for sporadic donations.
+Whitelist address has extrabalance account for sporadic donations. This can be topped up manually by people wanting to donate more (over and above the 1% default): e.g. a slackbot for donations, to allow individual members to donate easily and seamlessly.
 
-Further Ideas:
 
-Disaster relief through Facebook api for disaster reports
 
-Excluding religious and political charities
+Ideas for specific causes:
 
-Direct support (not via charities), for example refugee camps
+GiveWell recommended charities (the gold standard for doing the most good) - Against Malaria Foundation (malaria nets), Schistomiasis Control Initiative (deworming), GiveDirecly (unconditional cash transfers).
 
-Slackbot for donations, to allow individual members to donate easily and seamlessly
+Disaster relief through Facebook API for disaster reports (unused funds are allocated to other chosen charities at end of year).
+
+Excluding religious and political charities.
+
+Direct support (not via charities), for example refugee camps, or something analagous to GiveDirectly (unconditional cash transfers to the poorest families in the world). Would require widespread use of the Ethereum Computer, and an associated smart phone app (people receiving cash from GiveDirectly currently get M-Pesa by SMS, how long before even the poorest have smartphones? Or would it be feasible to link directly to M-Pesa?).
+
+Reducing Catastrophic/Existential Risk (risk of civilisational collapse, or human extinction) - see http://www.globalchallenges.org/reports/Global-Catastrophic-Risk-Annual-Report-2016.pdf
+
 
 
 RECOURCES
@@ -52,5 +61,5 @@ http://www.givewell.org/
 
 
 
-**Digital currencies has more than $10B market cap. LET'S MAKE 1% OF IT GO TO CHARITIES! This would go to the ones in need, and set an example to the rest of the world** 
+**Digital currencies have more than $10B in market cap. LET'S MAKE 1% OF IT GO TO CHARITIES! This would go to the ones in need, and set an example to the rest of the world** 
 
