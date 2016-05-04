@@ -10,7 +10,7 @@ Conversion to fiat and donation to any approved charities around the world
 DAO’s token holders would vote if, how much, how often and who to donate to. 
 
 
-Slock.it Dao PROPOSAL:
+Donacha.in Dao PROPOSAL:
 
 Adding a multisig address to whitelist - smart contract to accept portion of the reward tokens 
 
