@@ -17,7 +17,7 @@ The DAO is ushering in a revolutionary restructuring of the economy, one based o
 
 Adding a multisig address to whitelist - smart contract to accept portion of the reward tokens (e.g. 1% of profit).
 
-Whitelisted address is a smart contract. It reciecves funds from reward tokens, converts to fiat (exchanges API) and distributed to chosen charities (e.g. via JustGiving API).
+Whitelisted address is a smart contract. It recieves funds from reward tokens, converts to fiat (exchanges API) and distributed to chosen charities (e.g. via JustGiving API).
 
 Address is multisig and private keys held by DAO curators and an outside agreed organization (possibly Donachain Curators)
 
@@ -35,7 +35,7 @@ Whitelist address has extrabalance account for sporadic donations. This can be t
 
 Ideas for specific causes:
 
-GiveWell recommended charities (the gold standard for doing the most good) - Against Malaria Foundation (malaria nets), Schistomiasis Control Initiative (deworming), GiveDirecly (unconditional cash transfers).
+GiveWell recommended charities (the gold standard for doing the most good) - Against Malaria Foundation (mosquito nets), Schistomiasis Control Initiative (deworming), GiveDirecly (unconditional cash transfers).
 
 Disaster relief through Facebook API for disaster reports (unused funds are allocated to other chosen charities at end of year).
 
@@ -47,7 +47,7 @@ Reducing Catastrophic/Existential Risk (risk of civilisational collapse, or huma
 
 
 
-RECOURCES
+RESOURCES
 
 http://pledge1percent.org/ - This is the model inspiring the smart contract. Allowing startup contributing 1% equity donations to charities (by warrants executed upon liquidation event/exit). 
 
