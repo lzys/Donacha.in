@@ -21,12 +21,12 @@ Whitelisted address is a smart contract. It reciecves funds from reward tokens, 
 
 Address is multisig and private keys held by DAO curators and an outside agreed organization (possibly Donachain Curators)
 
-The reward tokens for charity are distibuted annually. DAO members would be able to submit a proposal to the smart contract, e.g. to vote for 5 causes to donate to in a 30/25/20/15/10 split, from a list made up of entries put forward by DAO members. On a specific date (e.g. 31st Dec), funds are automatically transmitted to the causes based on the outcome of the vote (this could be either direct to charities, or to corresponding smart contracts if the cause is not an organisation - e.g. helping refugees directly). Effectively, the list of entries for the vote would be smart contracts themselves. Vetting by curators would ensure that only legitimate charites made it onto the ballot.
+The reward tokens for charity are distibuted annually. DAO members would be able to submit a proposal to the smart contract, e.g. to vote for 5 causes to donate to in a 30/25/20/15/10 split, from a list made up of entries put forward by DAO members. On a specific date (e.g. 31st Dec), funds are automatically transmitted to the causes based on the outcome of the vote (this could be either direct to charities, or to corresponding smart contracts if the cause is not an organisation - e.g. helping refugees directly). Effectively, the list of entries for the vote would be smart contracts themselves. Vetting by curators would ensure that only legitimate charites make it onto the ballot.
 
 
 Track donation from blockchain explorer and charity receipt. 
 
-An opt-out clause to give DAO members the option to re-allocate their donations either back to themselves, or somewhere else. Would require a simple nominal transaction (i.e. gas only) to be made manually (default is that 1% of profit is donated). This is analagous to being able to take ETH out of the DAO - i.e. it minimises downside of proposal (but wouldn't effect membership of The DAO).
+An opt-out clause to give DAO members the option to re-allocate their donations either back to themselves, or somewhere else. Would require a simple nominal transaction (i.e. gas only) to be made manually (but default is that 1% of profit is donated). This is analagous to being able to take ETH out of the DAO - i.e. it minimises downside of proposal (but wouldn't effect membership of The DAO).
 
 TBD
 
