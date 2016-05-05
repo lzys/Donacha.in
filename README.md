@@ -36,29 +36,29 @@ Whitelist address has extrabalance account for sporadic donations. This can be t
 
 ## Ideas for specific causes:
 
-GiveWell recommended charities (the gold standard for doing the most good) - Against Malaria Foundation (mosquito nets), Schistomiasis Control Initiative (deworming), GiveDirecly (unconditional cash transfers).
+* GiveWell recommended charities (the gold standard for doing the most good) - Against Malaria Foundation (mosquito nets), Schistomiasis Control Initiative (deworming), GiveDirecly (unconditional cash transfers).
 
-Disaster relief through Facebook API for disaster reports (unused funds are allocated to other chosen charities at end of year).
+* Disaster relief through Facebook API for disaster reports (unused funds are allocated to other chosen charities at end of year).
 
-Excluding religious and political charities.
+* Excluding religious and political charities.
 
-Direct support (not via charities), for example refugee camps, or something analagous to GiveDirectly (unconditional cash transfers to the poorest families in the world). Would require widespread use of the Ethereum Computer, and an associated smart phone app (people receiving cash from GiveDirectly currently get M-Pesa by SMS, how long before even the poorest have smartphones? Or would it be feasible to link directly to M-Pesa?).
+* Direct support (not via charities), for example refugee camps, or something analagous to GiveDirectly (unconditional cash transfers to the poorest families in the world). Would require widespread use of the Ethereum Computer, and an associated smart phone app (people receiving cash from GiveDirectly currently get M-Pesa by SMS, how long before even the poorest have smartphones? Or would it be feasible to link directly to M-Pesa?).
 
-Reducing Catastrophic/Existential Risk (risk of civilisational collapse, or human extinction) - see http://www.globalchallenges.org/reports/Global-Catastrophic-Risk-Annual-Report-2016.pdf
+* Reducing Catastrophic/Existential Risk (risk of civilisational collapse, or human extinction) - see http://www.globalchallenges.org/reports/Global-Catastrophic-Risk-Annual-Report-2016.pdf
 
 
 
 ## RESOURCES
 
-http://pledge1percent.org/ - This is the model inspiring the smart contract. Allowing startup contributing 1% equity donations to charities (by warrants executed upon liquidation event/exit). 
+* http://pledge1percent.org/ - This is the model inspiring the smart contract. Allowing startup contributing 1% equity donations to charities (by warrants executed upon liquidation event/exit). 
 
-Http://proofofdoantion.com - A trusted transparent bridge for bitcoin donations to charities, uing justgiving.com api, other services and supports Donachain initiative. 
+* Http://proofofdoantion.com - A trusted transparent bridge for bitcoin donations to charities, uing justgiving.com api, other services and supports Donachain initiative. 
 
-http://www.justgiving.com  A large online offline gateway for many approved charities in UK, US and other countries, but could add more charities who hold the Dao’s standards. 
+* http://www.justgiving.com  A large online offline gateway for many approved charities in UK, US and other countries, but could add more charities who hold the Dao’s standards. 
 
-https://github.com/slockit/DAO/wiki/How-to-create-a-proposal
+* https://github.com/slockit/DAO/wiki/How-to-create-a-proposal
 
-http://www.givewell.org/
+* http://www.givewell.org/
 
 
 
