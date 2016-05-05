@@ -1,5 +1,6 @@
 # Donacha.in
-Donations through DAOs:
+
+## Donations through DAOs:
  
 An open source smart contract to manage a DAO’s charitable donations. 
 
@@ -11,7 +12,7 @@ DAO’s token holders would vote if, how much, how often and who to donate to.
 
 
 
-Donacha.in PROPOSAL to The DAO:
+## Donacha.in PROPOSAL to The DAO:
 
 The DAO is ushering in a revolutionary restructuring of the economy, one based on decrentralisation and transparency. Many are hopeful that it'll make the world a more equitable, better place. True to this end, having a system where a small portion of investor profits are automatically and directly distributed to some of the world's best causes (as voted on by members of The DAO) seems fitting.
 
@@ -33,7 +34,7 @@ Whitelist address has extrabalance account for sporadic donations. This can be t
 
 
 
-Ideas for specific causes:
+## Ideas for specific causes:
 
 GiveWell recommended charities (the gold standard for doing the most good) - Against Malaria Foundation (mosquito nets), Schistomiasis Control Initiative (deworming), GiveDirecly (unconditional cash transfers).
 
@@ -47,7 +48,7 @@ Reducing Catastrophic/Existential Risk (risk of civilisational collapse, or huma
 
 
 
-RESOURCES
+## RESOURCES
 
 http://pledge1percent.org/ - This is the model inspiring the smart contract. Allowing startup contributing 1% equity donations to charities (by warrants executed upon liquidation event/exit). 
 
