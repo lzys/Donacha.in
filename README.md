@@ -16,13 +16,13 @@ DAO’s token holders would vote if, how much, how often and who to donate to.
 
 The DAO is ushering in a revolutionary restructuring of the economy, one based on decrentralisation and transparency. Many are hopeful that it'll make the world a more equitable, better place. True to this end, having a system where a small portion of investor profits are automatically and directly distributed to some of the world's best causes (as voted on by members of The DAO) seems fitting.
 
-Adding a multisig address to whitelist - smart contract to accept portion of the reward tokens (e.g. 1% of profit).
+Adding a multisig address to whitelist - smart contract to accept portion of the reward tokens (e.g. 1% of profit), and 0.25% of DAO's Ether annually until first reward tokens are being distributed.
 
 Whitelisted address is a smart contract. It recieves funds from reward tokens, converts to fiat (exchanges API) and distributed to chosen charities (e.g. via JustGiving API).
 
 Address is multisig and private keys held by DAO curators and an outside agreed organization (possibly Donachain Curators)
 
-The reward tokens for charity are distibuted annually. DAO members would be able to submit a proposal to the smart contract, e.g. to vote for 5 causes to donate to in a 30/25/20/15/10 split, from a list made up of entries put forward by DAO members. On a specific date (e.g. 31st Dec), funds are automatically transmitted to the causes based on the outcome of the vote (this could be either direct to charities, or to corresponding smart contracts if the cause is not an organisation - e.g. helping refugees directly). Effectively, the list of entries for the vote would be smart contracts themselves. Vetting by curators would ensure that only legitimate philanthropic endeavors make it onto the ballot.
+The reward tokens for charity are distibuted annually. DAO members would be able to submit a proposal to the smart contract, e.g. to vote for 4 causes to donate to, 25% each, from a list made up of approved entries from justgiving.com. (Donacha.in 2.0 would be to direct to corresponding smart contracts if the cause is not an organisation - e.g. helping refugees directly). On a specific date (e.g. 31st Dec), funds are automatically transmitted to the causes based on the outcome of the vote . Effectively, the list of entries for the vote would be smart contracts themselves. 
 
 Track donation from blockchain explorer and charity receipt. 
 
