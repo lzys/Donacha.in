@@ -1,18 +1,18 @@
-The Donation DAO
+Donation DAO - Promotes social responsibility
 
-A. Overview-
+Overview-
 
-DAO for no profit. Contribute funds to be distributed with no expectation to ROI, just for helping others.
+Smart Contracts platform for good deeds. Contribute funds to be distributed with no expectation to ROI, just for helping others.
 
-Members pool funds together to be distributed upon proposals. 
+Members pool funds together to be distributed on donation proposals. 
 
-Donating by 75% majority. Majority could be based on stake (more tokens more vote), or if identity is integrated could be done each member=1 vote.
-
-B. Proof Flow 
+Donation Flow 
 
 1. Proposal of need uploaded - Could video be uploaded to the ether network? A formal letter for healthcare?  
 
 2. Approval of need - Community as curators to decide if authentic? 
+
+Donating decision by 75% majority. Majority could be based on stake (more tokens more vote), or if identity is integrated could be done each member=1 vote.
 
 3. Proof of used (Oracles) - donating for example beds to hospitals, could be done through smart contract paying only for beds in Ikea and makes sure it's being sent to right address. Integration with api of relevant shops (could even assist in digital currencies adoption!). 
 
