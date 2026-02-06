@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>MenuSpark - Eye Tracking Menu</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        :root {
+            --bg: #1a1a2e;
+            --card: #16213e;
+            --accent: #e94560;
+            --accent-hover: #ff6b81;
+            --text: #ffffff;
+            --text-dim: #a0a0b8;
+            --success: #4ecca3;
+            --grid-gap: 16px;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* ===== SCREENS ===== */
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .screen.active {
+            display: flex;
+        }
+
+        /* ===== CAPTURE SCREEN ===== */
+        #capture-screen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .app-title {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        .app-title span {
+            color: var(--accent);
+        }
+
+        .app-subtitle {
+            font-size: 20px;
+            color: var(--text-dim);
+            text-align: center;
+            line-height: 1.5;
+            max-width: 500px;
+        }
+
+        .capture-btn {
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            border: 6px solid var(--accent);
+            background: rgba(233, 69, 96, 0.1);
+            color: var(--text);
+            font-size: 22px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            transition: all 0.2s;
+        }
+        .capture-btn:hover, .capture-btn:focus {
+            background: rgba(233, 69, 96, 0.25);
+            transform: scale(1.05);
+            border-color: var(--accent-hover);
+        }
+        .capture-btn:active {
+            transform: scale(0.97);
+        }
+        .capture-btn svg {
+            width: 72px;
+            height: 72px;
+            fill: var(--accent);
+        }
+
+        .demo-link {
+            font-size: 18px;
+            color: var(--text-dim);
+            text-decoration: underline;
+            cursor: pointer;
+            padding: 12px 24px;
+            border: none;
+            background: none;
+        }
+        .demo-link:hover {
+            color: var(--text);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* ===== PROCESSING SCREEN ===== */
+        #processing-screen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .spinner {
+            width: 100px;
+            height: 100px;
+            border: 8px solid rgba(233, 69, 96, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .processing-text {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .processing-sub {
+            font-size: 18px;
+            color: var(--text-dim);
+        }
+
+        /* ===== GRID SCREEN ===== */
+        #grid-screen {
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .grid-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--card);
+            border-bottom: 2px solid rgba(233, 69, 96, 0.3);
+            flex-shrink: 0;
+        }
+
+        .back-btn {
+            background: none;
+            border: 2px solid var(--accent);
+            color: var(--text);
+            font-size: 18px;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .back-btn:hover {
+            background: rgba(233, 69, 96, 0.15);
+        }
+
+        .page-indicator {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-dim);
+        }
+
+        .grid-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            min-height: 0;
+            padding: 0;
+        }
+
+        /* Navigation arrows */
+        .nav-arrow {
+            width: 80px;
+            min-width: 80px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 64px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .nav-arrow:hover:not(:disabled) {
+            background: rgba(233, 69, 96, 0.1);
+            color: var(--accent-hover);
+        }
+        .nav-arrow:active:not(:disabled) {
+            background: rgba(233, 69, 96, 0.2);
+        }
+        .nav-arrow:disabled {
+            color: rgba(233, 69, 96, 0.15);
+            cursor: default;
+        }
+        .nav-arrow svg {
+            width: 56px;
+            height: 56px;
+            fill: currentColor;
+        }
+
+        /* The 2x2 grid */
+        .menu-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: var(--grid-gap);
+            padding: var(--grid-gap);
+            height: 100%;
+            min-height: 0;
+        }
+
+        .menu-item {
+            background: var(--card);
+            border: 3px solid rgba(233, 69, 96, 0.2);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.15s;
+            overflow: hidden;
+            min-height: 0;
+        }
+        .menu-item:hover {
+            border-color: var(--accent);
+            background: rgba(233, 69, 96, 0.08);
+            transform: scale(1.02);
+        }
+        .menu-item:active {
+            transform: scale(0.98);
+            background: rgba(233, 69, 96, 0.15);
+        }
+        .menu-item.selected {
+            border-color: var(--success);
+            background: rgba(78, 204, 163, 0.1);
+            box-shadow: 0 0 30px rgba(78, 204, 163, 0.2);
+        }
+
+        .item-name {
+            font-size: clamp(18px, 3.5vw, 32px);
+            font-weight: 700;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .item-price {
+            font-size: clamp(16px, 3vw, 28px);
+            color: var(--accent);
+            font-weight: 800;
+            margin-top: 10px;
+        }
+
+        .item-check {
+            display: none;
+            margin-top: 8px;
+        }
+        .menu-item.selected .item-check {
+            display: block;
+            color: var(--success);
+            font-size: 36px;
+        }
+
+        .menu-item.empty {
+            border-color: transparent;
+            background: transparent;
+            cursor: default;
+        }
+        .menu-item.empty:hover {
+            transform: none;
+        }
+
+        /* ===== SELECTION FOOTER ===== */
+        .grid-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--card);
+            border-top: 2px solid rgba(233, 69, 96, 0.3);
+            flex-shrink: 0;
+        }
+
+        .selection-count {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        .done-btn {
+            background: var(--success);
+            border: none;
+            color: #1a1a2e;
+            font-size: 20px;
+            font-weight: 800;
+            padding: 14px 40px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .done-btn:hover {
+            filter: brightness(1.1);
+            transform: scale(1.03);
+        }
+
+        /* ===== ORDER SCREEN ===== */
+        #order-screen {
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 30px;
+            gap: 30px;
+            overflow-y: auto;
+        }
+
+        .order-title {
+            font-size: 36px;
+            font-weight: 800;
+        }
+
+        .order-list {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card);
+            padding: 20px 24px;
+            border-radius: 16px;
+            border: 2px solid rgba(78, 204, 163, 0.3);
+        }
+
+        .order-item-name {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .order-item-price {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .order-btn {
+            padding: 16px 36px;
+            border-radius: 14px;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s;
+        }
+        .order-btn:hover {
+            transform: scale(1.04);
+        }
+        .order-btn.primary {
+            background: var(--success);
+            color: #1a1a2e;
+        }
+        .order-btn.secondary {
+            background: none;
+            border: 2px solid var(--text-dim);
+            color: var(--text);
+        }
+
+        /* ===== EDIT MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .modal h2 {
+            font-size: 28px;
+        }
+        .modal input {
+            width: 100%;
+            padding: 16px;
+            font-size: 20px;
+            border-radius: 12px;
+            border: 2px solid rgba(233,69,96,0.3);
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+        }
+        .modal input:focus {
+            border-color: var(--accent);
+        }
+        .modal-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+        }
+        .modal-btn {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+        }
+        .modal-btn.save {
+            background: var(--accent);
+            color: white;
+        }
+        .modal-btn.cancel {
+            background: none;
+            border: 2px solid var(--text-dim);
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SCREEN 1: Capture -->
+    <div id="capture-screen" class="screen active">
+        <div class="app-title">Menu<span>Spark</span></div>
+        <div class="app-subtitle">
+            Take a photo of any menu.<br>
+            We'll make it easy to choose with eye tracking.
+        </div>
+        <button class="capture-btn" id="capture-btn" aria-label="Take a photo of menu">
+            <svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2 7.17 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.17L15 2H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+            Snap Menu
+        </button>
+        <button class="demo-link" id="demo-btn">Try with demo menu</button>
+        <input type="file" id="file-input" accept="image/*" capture="environment">
+    </div>
+
+    <!-- SCREEN 2: Processing -->
+    <div id="processing-screen" class="screen">
+        <div class="spinner"></div>
+        <div class="processing-text">Reading your menu...</div>
+        <div class="processing-sub" id="processing-status">Initializing OCR</div>
+    </div>
+
+    <!-- SCREEN 3: Grid -->
+    <div id="grid-screen" class="screen">
+        <div class="grid-header">
+            <button class="back-btn" id="back-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                New Menu
+            </button>
+            <div class="page-indicator" id="page-indicator">1 / 1</div>
+        </div>
+        <div class="grid-body">
+            <button class="nav-arrow" id="prev-btn" aria-label="Previous page">
+                <svg viewBox="0 0 24 24"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+            <div class="menu-grid" id="menu-grid"></div>
+            <button class="nav-arrow" id="next-btn" aria-label="Next page">
+                <svg viewBox="0 0 24 24"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+            </button>
+        </div>
+        <div class="grid-footer">
+            <div class="selection-count" id="selection-count">0 selected</div>
+            <button class="done-btn" id="done-btn">Done</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 4: Order summary -->
+    <div id="order-screen" class="screen">
+        <div class="order-title">Your Picks</div>
+        <div class="order-list" id="order-list"></div>
+        <div class="order-actions">
+            <button class="order-btn secondary" id="order-back-btn">Go Back</button>
+            <button class="order-btn primary" id="order-new-btn">New Menu</button>
+        </div>
+    </div>
+
+    <!-- Edit modal -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal">
+            <h2>Edit Item</h2>
+            <label style="color:var(--text-dim);font-size:16px;">Name</label>
+            <input type="text" id="edit-name">
+            <label style="color:var(--text-dim);font-size:16px;">Price</label>
+            <input type="text" id="edit-price" placeholder="e.g. $12.99">
+            <div class="modal-actions">
+                <button class="modal-btn cancel" id="edit-cancel">Cancel</button>
+                <button class="modal-btn save" id="edit-save">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== State =====
+        let menuItems = [];
+        let currentPage = 0;
+        let selectedItems = new Set();
+        let editingIndex = -1;
+        const ITEMS_PER_PAGE = 4;
+
+        // ===== Elements =====
+        const captureScreen = document.getElementById('capture-screen');
+        const processingScreen = document.getElementById('processing-screen');
+        const gridScreen = document.getElementById('grid-screen');
+        const orderScreen = document.getElementById('order-screen');
+        const fileInput = document.getElementById('file-input');
+        const captureBtn = document.getElementById('capture-btn');
+        const demoBtn = document.getElementById('demo-btn');
+        const menuGrid = document.getElementById('menu-grid');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const pageIndicator = document.getElementById('page-indicator');
+        const selectionCount = document.getElementById('selection-count');
+        const doneBtn = document.getElementById('done-btn');
+        const backBtn = document.getElementById('back-btn');
+        const orderList = document.getElementById('order-list');
+        const orderBackBtn = document.getElementById('order-back-btn');
+        const orderNewBtn = document.getElementById('order-new-btn');
+        const processingStatus = document.getElementById('processing-status');
+        const editModal = document.getElementById('edit-modal');
+        const editName = document.getElementById('edit-name');
+        const editPrice = document.getElementById('edit-price');
+        const editSave = document.getElementById('edit-save');
+        const editCancel = document.getElementById('edit-cancel');
+
+        // ===== Screen management =====
+        function showScreen(screen) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            screen.classList.add('active');
+        }
+
+        // ===== Capture =====
+        captureBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) processImage(file);
+        });
+
+        demoBtn.addEventListener('click', () => {
+            loadDemoMenu();
+        });
+
+        // ===== OCR Processing =====
+        async function processImage(file) {
+            showScreen(processingScreen);
+
+            try {
+                processingStatus.textContent = 'Loading OCR engine...';
+
+                const result = await Tesseract.recognize(file, 'eng', {
+                    logger: (m) => {
+                        if (m.status === 'recognizing text') {
+                            const pct = Math.round(m.progress * 100);
+                            processingStatus.textContent = `Reading text... ${pct}%`;
+                        }
+                    }
+                });
+
+                processingStatus.textContent = 'Extracting menu items...';
+                const text = result.data.text;
+                menuItems = parseMenuText(text);
+
+                if (menuItems.length === 0) {
+                    menuItems = [{ name: 'Could not read menu', price: '' }];
+                }
+
+                currentPage = 0;
+                selectedItems.clear();
+                renderGrid();
+                showScreen(gridScreen);
+            } catch (err) {
+                console.error(err);
+                processingStatus.textContent = 'Error reading menu. Please try again.';
+                setTimeout(() => showScreen(captureScreen), 2000);
+            }
+        }
+
+        // ===== Parse menu text into items =====
+        function parseMenuText(text) {
+            const lines = text.split('\n')
+                .map(l => l.trim())
+                .filter(l => l.length > 1);
+
+            const items = [];
+            const priceRegex = /[\$\€\£]?\s*\d+[.,]\d{2}/;
+
+            for (const line of lines) {
+                // Skip very short or all-number lines
+                if (line.length < 2) continue;
+                if (/^\d+$/.test(line)) continue;
+
+                const priceMatch = line.match(priceRegex);
+                let name, price;
+
+                if (priceMatch) {
+                    price = priceMatch[0].trim();
+                    name = line.replace(priceMatch[0], '').replace(/[.\-_]{2,}/g, '').trim();
+                } else {
+                    name = line.replace(/[.\-_]{2,}/g, '').trim();
+                    price = '';
+                }
+
+                // Clean up name
+                name = name.replace(/^\d+[\.\)]\s*/, ''); // remove leading numbers
+                name = name.replace(/\s{2,}/g, ' ');
+
+                if (name.length > 1 && name.length < 80) {
+                    items.push({ name, price });
+                }
+            }
+
+            return items;
+        }
+
+        // ===== Demo menu =====
+        function loadDemoMenu() {
+            menuItems = [
+                { name: 'Margherita Pizza', price: '$14.99' },
+                { name: 'Caesar Salad', price: '$11.50' },
+                { name: 'Grilled Salmon', price: '$22.00' },
+                { name: 'Mushroom Risotto', price: '$16.75' },
+                { name: 'Fish & Chips', price: '$15.50' },
+                { name: 'Chicken Burger', price: '$13.99' },
+                { name: 'Tomato Soup', price: '$8.50' },
+                { name: 'Pasta Carbonara', price: '$15.00' },
+                { name: 'Steak Frites', price: '$26.00' },
+                { name: 'Chocolate Cake', price: '$9.50' },
+                { name: 'Lemonade', price: '$4.00' },
+                { name: 'Espresso', price: '$3.50' },
+            ];
+            currentPage = 0;
+            selectedItems.clear();
+            renderGrid();
+            showScreen(gridScreen);
+        }
+
+        // ===== Grid rendering =====
+        function totalPages() {
+            return Math.max(1, Math.ceil(menuItems.length / ITEMS_PER_PAGE));
+        }
+
+        function renderGrid() {
+            menuGrid.innerHTML = '';
+            const start = currentPage * ITEMS_PER_PAGE;
+
+            for (let i = 0; i < ITEMS_PER_PAGE; i++) {
+                const idx = start + i;
+                const card = document.createElement('div');
+                card.classList.add('menu-item');
+
+                if (idx < menuItems.length) {
+                    const item = menuItems[idx];
+                    const isSelected = selectedItems.has(idx);
+                    if (isSelected) card.classList.add('selected');
+
+                    card.innerHTML = `
+                        <div class="item-name">${escapeHtml(item.name)}</div>
+                        ${item.price ? `<div class="item-price">${escapeHtml(item.price)}</div>` : ''}
+                        <div class="item-check">&#10003;</div>
+                    `;
+
+                    // Tap to select, long press to edit
+                    let pressTimer;
+                    let didLongPress = false;
+
+                    card.addEventListener('pointerdown', () => {
+                        didLongPress = false;
+                        pressTimer = setTimeout(() => {
+                            didLongPress = true;
+                            openEditModal(idx);
+                        }, 600);
+                    });
+
+                    card.addEventListener('pointerup', () => {
+                        clearTimeout(pressTimer);
+                        if (!didLongPress) {
+                            toggleSelect(idx);
+                        }
+                    });
+
+                    card.addEventListener('pointerleave', () => {
+                        clearTimeout(pressTimer);
+                    });
+                } else {
+                    card.classList.add('empty');
+                }
+
+                menuGrid.appendChild(card);
+            }
+
+            // Update controls
+            pageIndicator.textContent = `${currentPage + 1} / ${totalPages()}`;
+            prevBtn.disabled = currentPage === 0;
+            nextBtn.disabled = currentPage >= totalPages() - 1;
+
+            const count = selectedItems.size;
+            selectionCount.textContent = count === 0 ? 'Tap to select' : `${count} selected`;
+        }
+
+        function toggleSelect(idx) {
+            if (selectedItems.has(idx)) {
+                selectedItems.delete(idx);
+            } else {
+                selectedItems.add(idx);
+            }
+            renderGrid();
+        }
+
+        // ===== Navigation =====
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 0) {
+                currentPage--;
+                renderGrid();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < totalPages() - 1) {
+                currentPage++;
+                renderGrid();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!gridScreen.classList.contains('active')) return;
+            if (e.key === 'ArrowLeft') prevBtn.click();
+            if (e.key === 'ArrowRight') nextBtn.click();
+        });
+
+        // ===== Back / Done =====
+        backBtn.addEventListener('click', () => {
+            showScreen(captureScreen);
+            fileInput.value = '';
+        });
+
+        doneBtn.addEventListener('click', () => {
+            renderOrder();
+            showScreen(orderScreen);
+        });
+
+        // ===== Order screen =====
+        function renderOrder() {
+            orderList.innerHTML = '';
+            if (selectedItems.size === 0) {
+                orderList.innerHTML = '<div style="text-align:center;color:var(--text-dim);font-size:20px;padding:40px;">No items selected</div>';
+                return;
+            }
+            const sorted = [...selectedItems].sort((a, b) => a - b);
+            for (const idx of sorted) {
+                const item = menuItems[idx];
+                const div = document.createElement('div');
+                div.classList.add('order-item');
+                div.innerHTML = `
+                    <span class="order-item-name">${escapeHtml(item.name)}</span>
+                    <span class="order-item-price">${escapeHtml(item.price || '-')}</span>
+                `;
+                orderList.appendChild(div);
+            }
+        }
+
+        orderBackBtn.addEventListener('click', () => showScreen(gridScreen));
+        orderNewBtn.addEventListener('click', () => {
+            showScreen(captureScreen);
+            fileInput.value = '';
+        });
+
+        // ===== Edit modal =====
+        function openEditModal(idx) {
+            editingIndex = idx;
+            editName.value = menuItems[idx].name;
+            editPrice.value = menuItems[idx].price;
+            editModal.classList.add('active');
+            editName.focus();
+        }
+
+        editSave.addEventListener('click', () => {
+            if (editingIndex >= 0) {
+                menuItems[editingIndex].name = editName.value.trim() || 'Item';
+                menuItems[editingIndex].price = editPrice.value.trim();
+                renderGrid();
+            }
+            editModal.classList.remove('active');
+            editingIndex = -1;
+        });
+
+        editCancel.addEventListener('click', () => {
+            editModal.classList.remove('active');
+            editingIndex = -1;
+        });
+
+        // Close modal on overlay click
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) {
+                editModal.classList.remove('active');
+                editingIndex = -1;
+            }
+        });
+
+        // ===== Utilities =====
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
