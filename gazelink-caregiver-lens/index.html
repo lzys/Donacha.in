@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="Glanceable caregiver display for GazeLink: shows urgency-ranked question suggestions for a non-verbal patient without breaking eye contact.">
+  <meta name="mrbd-web-app-capable" content="yes">
+  <title>GazeLink Caregiver Lens</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app-root">
+
+    <!-- Quiet "no connection yet" state -->
+    <div id="waiting-view" class="view hidden">
+      <div class="waiting-text">waiting for GazeLink&hellip;</div>
+    </div>
+
+    <!-- Main glanceable prompt view -->
+    <div id="prompt-view" class="view hidden">
+      <div id="demo-chip" class="demo-chip hidden">DEMO</div>
+
+      <div class="prompt-header">
+        <div id="priority-badge" class="priority-badge">1</div>
+        <div id="urgency-word" class="urgency-word">high</div>
+        <div id="asked-check" class="asked-check hidden">&#10003;</div>
+      </div>
+
+      <div class="prompt-body">
+        <div id="prompt-text" class="prompt-text"></div>
+      </div>
+
+      <div id="prompt-dots" class="prompt-dots"></div>
+    </div>
+
+    <!-- Full-screen reply takeover -->
+    <div id="reply-view" class="view hidden">
+      <div class="reply-label">PATIENT SAYS</div>
+      <div id="reply-text" class="reply-text"></div>
+    </div>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
