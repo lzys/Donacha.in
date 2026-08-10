@@ -1,0 +1,209 @@
+:root {
+  --bg-page: #000000;       /* transparent on additive display */
+  --bg-surface: #1c1e21;    /* opaque UI surface */
+  --text-primary: #ffffff;
+  --text-secondary: #b0b3b8;
+  --text-muted: #6b6e73;
+  --urgency-high: #ff6b4a;
+  --urgency-medium: #ffc24a;
+  --urgency-low: #5fd3b2;
+  --reply-teal: #2dd4bf;
+  --badge-ink: #0a0a0f;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+#app-root {
+  position: relative;
+  width: 600px;
+  height: 600px;
+}
+
+.view {
+  position: absolute;
+  inset: 0;
+}
+.view.hidden { display: none !important; }
+
+/* ---------- Waiting state ---------- */
+#waiting-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.waiting-text {
+  color: var(--text-secondary);
+  font-size: 18px;
+  text-align: center;
+}
+
+/* ---------- Main prompt view ---------- */
+#prompt-view {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.demo-chip {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+.demo-chip.hidden { display: none; }
+
+.prompt-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  height: 48px;
+  transition: opacity 300ms cubic-bezier(0.4, 0.04, 0.5, 1);
+}
+
+.priority-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--urgency-high);
+  color: var(--badge-ink);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.urgency-word {
+  font-size: 17px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--urgency-high);
+}
+
+.asked-check {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--urgency-low);
+  color: var(--badge-ink);
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.asked-check.hidden { display: none; }
+
+.prompt-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 8px 4px;
+  transition: opacity 300ms cubic-bezier(0.4, 0.04, 0.5, 1);
+}
+
+.prompt-text {
+  width: 100%;
+  text-align: center;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.prompt-view-asked .prompt-header,
+.prompt-view-asked .prompt-body {
+  opacity: 0.45;
+}
+
+.prompt-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.prompt-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-secondary);
+  background: transparent;
+}
+.prompt-dot.active {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+}
+.prompt-dot.asked {
+  border-color: var(--urgency-low);
+}
+.prompt-dot.asked.active {
+  background: var(--urgency-low);
+  border-color: var(--urgency-low);
+}
+
+/* ---------- Reply takeover ---------- */
+#reply-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 32px;
+  background: var(--bg-surface);
+  border: 6px solid var(--reply-teal);
+}
+
+.reply-label {
+  color: var(--reply-teal);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.reply-text {
+  width: 100%;
+  text-align: center;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+/* Urgency color modifiers, toggled via JS by adding one of these to #prompt-view */
+#prompt-view.urgency-high .priority-badge { background: var(--urgency-high); }
+#prompt-view.urgency-high .urgency-word { color: var(--urgency-high); }
+#prompt-view.urgency-medium .priority-badge { background: var(--urgency-medium); }
+#prompt-view.urgency-medium .urgency-word { color: var(--urgency-medium); }
+#prompt-view.urgency-low .priority-badge { background: var(--urgency-low); }
+#prompt-view.urgency-low .urgency-word { color: var(--urgency-low); }
