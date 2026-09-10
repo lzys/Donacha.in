@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A poem generator controlled entirely by eye gaze: works with dedicated eye-tracking hardware (Tobii, PCEye, etc.) that moves the mouse pointer, or with a laptop webcam via on-device gaze tracking.">
+  <title>Gaze Poem Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="gaze-cursor" aria-hidden="true"></div>
+  <div id="live-region" class="visually-hidden" aria-live="polite"></div>
+
+  <div id="app-root">
+
+    <!-- ==================== INTRO / SETUP ==================== -->
+    <section id="view-intro" class="view">
+      <div class="intro-card">
+        <h1>Gaze Poem Generator</h1>
+        <p class="intro-lede">
+          Look at a choice and hold your gaze &mdash; no clicking required.
+          Five gazes build one short poem.
+        </p>
+
+        <div class="intro-options">
+          <button type="button" class="big-choice" data-mode="pointer">
+            <span class="big-choice-emoji" aria-hidden="true">🖱️</span>
+            <span class="big-choice-title">Use Eye-Tracker / Pointer</span>
+            <span class="big-choice-sub">For Tobii, PCEye, or any device that moves the mouse. Starts immediately.</span>
+          </button>
+          <button type="button" class="big-choice" data-mode="webgazer">
+            <span class="big-choice-emoji" aria-hidden="true">🎥</span>
+            <span class="big-choice-title">Use Laptop Webcam</span>
+            <span class="big-choice-sub">On-device gaze tracking through your camera. Needs a short calibration.</span>
+          </button>
+        </div>
+
+        <div class="intro-settings">
+          <label for="dwell-slider">
+            Gaze hold time: <span id="dwell-value">1.2</span>s
+          </label>
+          <input type="range" id="dwell-slider" min="500" max="3000" step="100" value="1200">
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="sound-toggle" checked>
+            Play a sound when a choice is selected
+          </label>
+        </div>
+
+        <p class="intro-note">
+          Every option can also be reached with <kbd>Tab</kbd> and chosen with
+          <kbd>Enter</kbd> or a click/tap &mdash; the eye-tracking is an addition,
+          not a requirement.
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================== WEBCAM CALIBRATION ==================== -->
+    <section id="view-calibration" class="view hidden">
+      <div class="calibration-header">
+        <h2>Calibration</h2>
+        <p>Look directly at each dot and click it 5 times. Keep your head steady and your face visible in the small camera preview.</p>
+        <p id="calibration-progress-text">0 of 9 points calibrated</p>
+        <button type="button" id="skip-calibration" class="text-button">Skip calibration &amp; start anyway</button>
+      </div>
+      <div id="calibration-grid"></div>
+    </section>
+
+    <!-- ==================== POEM-BUILDING STEP ==================== -->
+    <section id="view-step" class="view hidden">
+      <div class="step-header">
+        <div id="step-dots" class="step-dots"></div>
+        <h2 id="step-prompt" class="step-prompt"></h2>
+      </div>
+      <div id="step-grid" class="step-grid"></div>
+    </section>
+
+    <!-- ==================== FINISHED POEM ==================== -->
+    <section id="view-poem" class="view hidden">
+      <div class="poem-card">
+        <h2 id="poem-title" class="poem-title"></h2>
+        <p id="poem-text" class="poem-text"></p>
+      </div>
+      <div id="poem-actions" class="step-grid poem-actions"></div>
+    </section>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
