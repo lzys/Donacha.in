@@ -136,6 +136,7 @@
   .calib-text b { display: block; color: var(--paper); font-family: var(--display); font-size: 30px; font-weight: 800; }
 
   /* ---------- game ---------- */
+  #game, #calib { touch-action: none; }
   #game { display: grid; grid-template-rows: auto 1fr auto; gap: 14px; }
   .hud { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; }
   .selfie { position: relative; width: 104px; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; background: var(--night-2); }
@@ -246,10 +247,17 @@
 
   @media (max-width: 700px) {
     body { overflow: auto; }
-    .hud { grid-template-columns: 1fr auto; }
-    .selfie { display: none; }
-    .key { font-size: 28px; border-radius: 14px; }
+    #game { gap: 10px; }
+    .hud { grid-template-columns: auto 1fr auto; gap: 10px; }
+    .selfie { width: 60px; border-radius: 8px; }
+    .target { font-size: 22px; }
+    .clock { font-size: 28px; }
+    .key { font-size: 26px; letter-spacing: .06em; border-radius: 14px; }
+    .key small { font-size: 13px; margin-top: 4px; }
+    .key.typed { font-size: 22px; }
     .board { gap: 8px; }
+    .foot { font-size: 13px; }
+    .gaze-dot { width: 36px; height: 36px; margin: -18px 0 0 -18px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .reveal-go .fade, .calib-dot.hold, .key.hit, .typed-line .caret { animation: none !important; }
@@ -292,7 +300,7 @@
 <section class="screen" id="setup" hidden>
   <div class="setup-inner">
     <h2>Put your face in the oval</h2>
-    <p>Sit about an arm's length from the screen, with light on your face.</p>
+    <p id="setup-tip">Sit about an arm's length from the screen, with light on your face.</p>
     <div class="mirror" id="mirror"><div class="oval"></div></div>
     <p class="face-state" id="face-state">Starting the camera…</p>
     <button class="btn-main" id="go-calib" type="button" disabled>Next: follow the dot</button>
@@ -383,6 +391,12 @@
   var screens = ['intro', 'setup', 'calib', 'game', 'reveal'];
   function show(id) { screens.forEach(function (s) { $(s).hidden = s !== id; }); }
 
+  var TOUCH = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  if (TOUCH) {
+    $('go-mouse').textContent = 'No camera? Use your finger, no tapping';
+    $('setup-tip').textContent = 'Prop your phone up against something at eye level, about 40 cm away, with light on your face. Keep it still while you play.';
+  }
+
   var toastTimer = null;
   function toast(msg) {
     $('toast').textContent = msg; $('toast').hidden = false;
@@ -427,7 +441,9 @@
             outputFacialTransformationMatrixes: true
           });
         }
-        return make('GPU').catch(function () { return make('CPU'); });
+        var gpu = make('GPU');
+        var timeout = new Promise(function (_, reject) { setTimeout(function () { reject(new Error('GPU start timed out')); }, 8000); });
+        return Promise.race([gpu, timeout]).catch(function () { return make('CPU'); });
       });
     });
   }
@@ -711,7 +727,9 @@
     $('gaze-dot').hidden = false;
     $('foot-tip').textContent = mode === 'cam'
       ? 'Look at a group of letters, then at the letter. The dashed box shows where to look next.'
-      : 'Mouse mode: hover to choose. Clicking does nothing, just like for someone who can only move their eyes.';
+      : TOUCH
+        ? 'Finger mode: rest your finger on a key and hold still. Tapping does nothing.'
+        : 'Mouse mode: hover to choose. Clicking does nothing, just like for someone who can only move their eyes.';
     renderBoard();
     requestAnimationFrame(gameLoop);
   }
@@ -770,12 +788,18 @@
     requestAnimationFrame(gameLoop);
   }
 
-  // Mouse mode: the pointer stands in for the eyes, and clicks are refused.
-  document.addEventListener('pointermove', function (e) {
+  // Mouse / finger mode: the pointer stands in for the eyes, and clicks or taps
+  // are refused. On a touchscreen, lifting the finger means "not looking".
+  function pointerGaze(e) {
     if (game.active && mode === 'mouse') gazePt = { x: e.clientX, y: e.clientY };
-  }, { passive: true });
+  }
+  document.addEventListener('pointermove', pointerGaze, { passive: true });
+  document.addEventListener('pointerdown', pointerGaze, { passive: true });
+  function pointerGone(e) { if (e.pointerType !== 'mouse' && mode === 'mouse') gazePt = null; }
+  document.addEventListener('pointerup', pointerGone, { passive: true });
+  document.addEventListener('pointercancel', pointerGone, { passive: true });
   board.addEventListener('click', function () {
-    if (mode === 'mouse') toast('No clicking! Someone who can only move their eyes can’t click either. Hold still on a key.');
+    if (mode === 'mouse' && !TOUCH) toast('No clicking! Someone who can only move their eyes can’t click either. Hold still on a key.');
   });
 
   $('go-mouse').addEventListener('click', function () { mode = 'mouse'; gazePt = null; startGame(); });
@@ -805,8 +829,8 @@
       $('r-stats').textContent = game.looks + ' looks, ' + (game.typed.length ? '“' + game.typed + '” typed' : 'nothing typed yet');
       $('r-line1').textContent = 'You could stop. They can’t.';
     } else {
-      $('r-what').textContent = 'You said “' + target() + '” with your eyes.';
-      $('r-stats').textContent = words + (words === 1 ? ' word, ' : ' words, ') + letters + ' letters, ' + game.looks + ' looks' + (mode === 'mouse' ? ' (mouse mode)' : '');
+      $('r-what').textContent = 'You said “' + target() + '”' + (mode === 'cam' ? ' with your eyes.' : ' without a single ' + (TOUCH ? 'tap.' : 'click.'));
+      $('r-stats').textContent = words + (words === 1 ? ' word, ' : ' words, ') + letters + ' letters, ' + game.looks + ' looks' + (mode === 'mouse' ? (TOUCH ? ' (finger mode)' : ' (mouse mode)') : '');
       $('r-line1').textContent = 'For you, it was a game.';
     }
     setupShare();
