@@ -84,10 +84,42 @@
   /* top: spoken phrase bar */
   .said {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: auto 1fr auto auto;
     gap: var(--gap);
     align-items: stretch;
   }
+  /* eye check square: webcam preview (or eye picture) ringed by gaze status */
+  .eyes {
+    --status: var(--line);
+    position: relative;
+    aspect-ratio: 1;
+    height: 100%;
+    min-height: 96px;
+    max-height: 132px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--said-bg);
+    box-shadow: inset 0 0 0 6px var(--status);
+    display: grid;
+    place-items: center;
+  }
+  .eyes video, .big-eyes video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+  .eyes .guide, .big-eyes .guide { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .eyes .fallback { width: 58%; height: 58%; }
+  .eyes .status {
+    position: absolute; left: 6px; right: 6px; bottom: 6px;
+    background: var(--status); color: #fff;
+    font-size: 13px; font-weight: 700; line-height: 1.1;
+    text-align: center; padding: 4px 2px; border-radius: 0 0 12px 12px;
+  }
+  .eyes::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 6px var(--status); pointer-events: none; }
+  .eyes[data-state="ok"] { --status: #1f9e7c; }
+  .eyes[data-state="away"] { --status: #d9822b; }
+  .eyes[data-state="lost"] { --status: #d0463b; }
+  .eyes[data-state="lost"]::after, .eyes[data-state="away"]::after { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { box-shadow: inset 0 0 0 12px var(--status); } }
+  .big-eyes { position: relative; width: min(100%, 360px); aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden; background: var(--said-bg); justify-self: center; }
+  .big-eyes .none { position: absolute; inset: 0; display: grid; place-items: center; color: var(--said-ink); padding: 16px; text-align: center; font-size: 16px; line-height: 1.4; }
   .said-text {
     background: var(--said-bg);
     color: var(--said-ink);
@@ -234,13 +266,14 @@
     .board { grid-template-columns: repeat(2, 1fr); grid-template-rows: none; }
     .tile { min-height: 180px; }
     .pics svg, .pics.one svg { height: 72px; }
-    .said { grid-template-columns: 1fr 1fr; }
+    .said { grid-template-columns: auto 1fr 1fr; }
     .said-text { grid-column: 1 / -1; }
+    .eyes { height: 96px; }
     .nav { grid-template-columns: 1fr 1fr; }
     .tabs { grid-column: 1 / -1; grid-row: 1; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .dwellable.hit { animation: none; }
+    .dwellable.hit, .eyes::after { animation: none !important; }
   }
 </style>
 
@@ -248,6 +281,10 @@
 
 <div class="app">
   <header class="said">
+    <div class="eyes" id="eyes" data-state="idle" role="status" aria-live="polite">
+      <svg class="fallback" aria-hidden="true"><use href="#e1f440"></use></svg>
+      <span class="status" id="eyes-status">Eyes</span>
+    </div>
     <div class="said-text empty" id="said" aria-live="polite">Look at a picture to say it</div>
     <button class="tool" id="again" type="button">Say again<small>repeat</small></button>
     <button class="tool" id="settings" type="button">Settings<small id="dwell-status">dwell 1.5 s</small></button>
@@ -267,6 +304,14 @@
     <h1 id="ov-title">Snorkel Talk</h1>
     <p>30 picture phrases about snorkelling, 6 on each of 5 pages. Look at a picture and hold your gaze. An orange fill rises, and when it reaches the top the phrase is spoken aloud.</p>
 
+    <div class="field">
+      <span class="field-label">Seating check: line the eyes up with the two circles</span>
+      <div class="big-eyes" id="big-eyes"><svg class="guide" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="40" x2="100" y2="40" stroke="#fff" stroke-opacity=".35" stroke-width=".6" stroke-dasharray="3 3"/><ellipse cx="36" cy="40" rx="9" ry="6" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.2"/><ellipse cx="64" cy="40" rx="9" ry="6" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.2"/></svg><div class="none" id="big-eyes-none">Click here to turn on the camera. If the browser asks, allow it.</div></div>
+    </div>
+    <div class="field">
+      <span class="field-label">Camera picture in the eye square</span>
+      <div class="choices" id="camera-choices"></div>
+    </div>
     <div class="check" id="check"><span class="dot"></span><span id="check-text">Eye tracker check: move your eyes (or the mouse) over this box.</span></div>
 
     <div class="field">
@@ -285,13 +330,15 @@
         <li>If the check box above turns green when the user looks at it, dwell will work.</li>
         <li>If the Tobii software also clicks by itself (its own dwell click), you can either keep this page's dwell on, or choose <b>Off</b> above and let Tobii do the clicking. This page will not select the same picture twice either way.</li>
         <li>If the pointer shakes, a small wobble off a tile is forgiven. Try a longer dwell time if pictures get chosen by accident.</li>
+        <li>The square at the top left shows the user’s eyes from the laptop webcam, ringed in green while the eye tracker is following them, orange when the gaze leaves the screen, and red when the eye tracker has lost the eyes. The camera picture stays on this laptop and is never recorded or sent anywhere.</li>
+        <li>Tobii’s own <b>Track Status</b> window shows what the eye tracker itself sees. Keep it handy when positioning the user.</li>
         <li>Use Chrome or Edge in full screen (press F11) for the biggest tiles.</li>
       </ul>
     </details>
 
     <button class="go" id="start" type="button">Start</button>
     <p>A helper should click Start once with the mouse or touchpad. Browsers only allow speech after a real click.</p>
-    <p class="credit">Pictures: Twemoji, CC-BY 4.0.</p>
+    <p class="credit">Pictures: Twemoji, CC-BY 4.0. The camera picture stays on this device.</p>
   </div>
 </div>
 
@@ -316,15 +363,23 @@
   // How long the gaze may wobble off a target before its fill resets.
   var GRACE_MS = 350;
 
-  var state = { page: 0, dwellMs: 1500, voice: true, last: null };
+  var CAMERA_OPTIONS = [
+    { label: 'Show camera', on: true },
+    { label: 'No camera (eye picture only)', on: false }
+  ];
+  // No gaze samples for this long means the eye tracker has lost the eyes.
+  var LOST_MS = 2500;
+
+  var state = { page: 0, dwellMs: 1500, voice: true, camera: true, last: null };
   try {
     var saved = JSON.parse(localStorage.getItem('snorkel-talk-v2') || '{}');
     if (typeof saved.dwellMs === 'number') state.dwellMs = saved.dwellMs;
     if (typeof saved.voice === 'boolean') state.voice = saved.voice;
+    if (typeof saved.camera === 'boolean') state.camera = saved.camera;
     if (typeof saved.page === 'number' && saved.page >= 0 && saved.page < PAGES.length) state.page = saved.page;
   } catch (e) {}
   function save() {
-    try { localStorage.setItem('snorkel-talk-v2', JSON.stringify({ dwellMs: state.dwellMs, voice: state.voice, page: state.page })); } catch (e) {}
+    try { localStorage.setItem('snorkel-talk-v2', JSON.stringify({ dwellMs: state.dwellMs, voice: state.voice, camera: state.camera, page: state.page })); } catch (e) {}
   }
 
   var $ = function (id) { return document.getElementById(id); };
@@ -366,7 +421,77 @@
   // wobbles off the target (GRACE_MS), and a target that fired stays locked
   // until the gaze has really left it, so it never repeats by accident.
   var gaze = { el: null, progress: 0, offSince: 0, locked: null, lockedOffSince: 0, last: 0 };
-  var gazeSeen = 0;
+  var gazeSeen = 0, lastGaze = 0, pointerInside = false;
+
+  // ---------- eye check square ----------
+  // "ok": gaze samples are arriving over the page. "away": the pointer left the
+  // window or the page lost focus. "lost": the pointer has frozen, which is
+  // what eye-tracker software does when it can no longer see the eyes.
+  var eyesBox = $('eyes'), eyesStatus = $('eyes-status');
+  var EYE_LABELS = { idle: 'Eyes', ok: 'Looking', away: 'Looking away', lost: 'Eyes lost' };
+  document.documentElement.addEventListener('pointerleave', function () { pointerInside = false; });
+  document.addEventListener('mouseout', function (e) { if (!e.relatedTarget) pointerInside = false; });
+  window.addEventListener('blur', function () { pointerInside = false; });
+  function eyeState(now) {
+    if (!gazeSeen) return 'idle';
+    if (!pointerInside || document.hidden) return 'away';
+    if (now - lastGaze > LOST_MS) return 'lost';
+    return 'ok';
+  }
+  var shownEyeState = '';
+  function updateEyes(now) {
+    var st = eyeState(now);
+    if (st === shownEyeState) return;
+    shownEyeState = st;
+    eyesBox.setAttribute('data-state', st);
+    eyesStatus.textContent = EYE_LABELS[st];
+  }
+
+  var camStream = null, camTried = false;
+  function attachVideo(box) {
+    var v = box.querySelector('video');
+    if (!v) {
+      v = document.createElement('video');
+      v.muted = true; v.playsInline = true; v.autoplay = true;
+      v.setAttribute('aria-hidden', 'true');
+      box.insertBefore(v, box.firstChild);
+    }
+    v.srcObject = camStream;
+    try { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
+  }
+  function showCamera() {
+    var fb = eyesBox.querySelector('.fallback');
+    fb.hidden = true;
+    attachVideo(eyesBox);
+    attachVideo($('big-eyes'));
+    $('big-eyes-none').hidden = true;
+  }
+  function hideCamera(msg) {
+    Array.prototype.forEach.call(document.querySelectorAll('.eyes video, .big-eyes video'), function (v) { v.remove(); });
+    eyesBox.querySelector('.fallback').hidden = false;
+    $('big-eyes-none').hidden = false;
+    $('big-eyes-none').textContent = msg;
+  }
+  function startCamera() {
+    if (!state.camera) { stopCamera(); hideCamera('Camera picture is turned off.'); return; }
+    if (camStream) { showCamera(); return; }
+    if (camTried) return;
+    camTried = true;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      hideCamera('This browser cannot show the camera here. The eye square still shows whether the user is looking.');
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false })
+      .then(function (stream) { camStream = stream; if (state.camera) showCamera(); else stopCamera(); })
+      .catch(function () {
+        camTried = false;
+        hideCamera('The camera is not available here. Check that the browser is allowed to use it. The eye square still shows whether the user is looking.');
+      });
+  }
+  function stopCamera() {
+    if (camStream) camStream.getTracks().forEach(function (t) { t.stop(); });
+    camStream = null;
+  }
 
   function setFill(el, p) { if (el) el.style.setProperty('--p', p.toFixed(3)); }
 
@@ -378,6 +503,8 @@
   function onPointer(e) {
     if (e.pointerType === 'touch') return;
     gazeSeen++;
+    lastGaze = performance.now();
+    pointerInside = true;
     var t = e.target.closest ? e.target.closest('.dwellable') : null;
     if (t && !t.isConnected) t = null;
     if (t === gaze.el) { gaze.offSince = 0; }
@@ -394,6 +521,7 @@
     var dt = gaze.last ? Math.min(now - gaze.last, 100) : 0;
     gaze.last = now;
 
+    updateEyes(now);
     if (gaze.locked && gaze.lockedOffSince && now - gaze.lockedOffSince > GRACE_MS) gaze.locked = null;
 
     var el = gaze.el;
@@ -495,6 +623,9 @@
     renderChoices($('voice-choices'), VOICE_OPTIONS,
       function (o) { return o.on === state.voice; },
       function (o) { state.voice = o.on; save(); });
+    renderChoices($('camera-choices'), CAMERA_OPTIONS,
+      function (o) { return o.on === state.camera; },
+      function (o) { state.camera = o.on; save(); startCamera(); });
     $('dwell-status').textContent = state.dwellMs ? 'dwell ' + (state.dwellMs / 1000) + ' s' : 'click only';
   }
 
@@ -509,12 +640,14 @@
     }
   });
 
+  $('big-eyes').addEventListener('click', startCamera);
   makeDwellable($('prev'), function () { goTo(state.page - 1); });
   makeDwellable($('next'), function () { goTo(state.page + 1); });
   makeDwellable($('again'), function () { if (state.last) speak(state.last.text); });
   makeDwellable($('settings'), function () { overlay.hidden = false; });
   makeDwellable($('start'), function () {
     overlay.hidden = true;
+    startCamera();
     // a silent utterance inside the helper's click unlocks speech for later dwell selections
     if (state.voice && 'speechSynthesis' in window) {
       try { var u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch (e) {}

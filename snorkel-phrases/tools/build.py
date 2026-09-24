@@ -71,18 +71,24 @@ def svg_file(e):
     raise SystemExit(f"No Twemoji SVG for {e!r} ({cps})")
 
 symbols, pages = {}, []
+
+def add_symbol(e):
+    sid, path = svg_file(e)
+    if sid not in symbols:
+        svg = open(path, encoding="utf-8").read()
+        vb = re.search(r'viewBox="([^"]+)"', svg).group(1)
+        body = re.sub(r"^.*?<svg[^>]*>|</svg>\s*$", "", svg, flags=re.S)
+        symbols[sid] = f'<symbol id="e{sid}" viewBox="{vb}">{body}</symbol>'
+    return "e" + sid
+
+# pictures used by the page chrome (eye check square)
+add_symbol("👀")
 for name, color, items in PAGES:
     page = {"name": name, "color": color, "phrases": []}
     for text, emo in items:
         ids = []
         for e in split_emoji(emo):
-            sid, path = svg_file(e)
-            if sid not in symbols:
-                svg = open(path, encoding="utf-8").read()
-                vb = re.search(r'viewBox="([^"]+)"', svg).group(1)
-                body = re.sub(r"^.*?<svg[^>]*>|</svg>\s*$", "", svg, flags=re.S)
-                symbols[sid] = f'<symbol id="e{sid}" viewBox="{vb}">{body}</symbol>'
-            ids.append("e" + sid)
+            ids.append(add_symbol(e))
         page["phrases"].append({"text": text, "pics": ids})
     pages.append(page)
 
