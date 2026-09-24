@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Say It With Your Eyes</title>
+<meta name="description" content="Can you spell I LOVE YOU using only your eyes? A webcam challenge about the people who speak this way every day.">
+<meta property="og:title" content="Say It With Your Eyes">
+<meta property="og:description" content="Spell a message using only your eyes. No mouse, no keyboard, no touching. Then find out who speaks this way every day.">
+<meta property="og:image" content="https://lzys.github.io/Donacha.in/eye-challenge/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+  /* One deliberate look: a dim room lit by a screen, with an amber iris accent. */
+  :root {
+    color-scheme: dark;
+    --night: #120f24;
+    --night-2: #1c1836;
+    --night-3: #292350;
+    --paper: #f6efe6;
+    --dim: #b3abc9;
+    --iris: #f2a93b;
+    --iris-soft: rgba(242, 169, 59, .22);
+    --rose: #ff7a7a;
+    --ok: #4fd1a5;
+    --display: "Bricolage Grotesque", "Arial Black", "Segoe UI", system-ui, sans-serif;
+    --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  [hidden] { display: none !important; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--night);
+    color: var(--paper);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.5;
+    overflow: hidden;
+  }
+  button, a.btn {
+    font: inherit;
+    color: inherit;
+    border: 0;
+    cursor: pointer;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:focus-visible, a:focus-visible { outline: 3px solid var(--iris); outline-offset: 3px; }
+  .screen { position: fixed; inset: 0; padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
+
+  /* ---------- intro ---------- */
+  #intro { overflow-y: auto; display: grid; place-items: center; }
+  .intro-inner { width: min(100%, 880px); display: grid; gap: 28px; padding-block: 24px; }
+  .eye-mark { width: 88px; height: 44px; }
+  .kicker { font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--iris); font-weight: 700; margin: 0; }
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(44px, 8.5vw, 104px);
+    line-height: .92;
+    letter-spacing: -.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h1 em { font-style: normal; color: var(--iris); }
+  .lede { font-size: clamp(18px, 2.2vw, 23px); max-width: 34em; margin: 0; color: var(--paper); }
+  .lede b { color: var(--iris); }
+  .friend {
+    border: 2px solid var(--iris);
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 19px;
+    background: var(--iris-soft);
+  }
+  .field-label { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); font-weight: 700; margin-bottom: 10px; }
+  .phrases { display: flex; flex-wrap: wrap; gap: 10px; }
+  .phrase {
+    background: var(--night-2);
+    border: 2px solid var(--night-3);
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: .04em;
+  }
+  .phrase[aria-pressed="true"] { border-color: var(--iris); color: var(--iris); }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn-main {
+    background: var(--iris);
+    color: #1b1304;
+    font-weight: 700;
+    font-size: 21px;
+    padding: 18px 28px;
+    border-radius: 14px;
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 2px solid var(--night-3);
+    color: var(--paper);
+    font-weight: 700;
+    padding: 16px 22px;
+    border-radius: 14px;
+  }
+  .btn-ghost:hover { border-color: var(--dim); }
+  .fine { font-size: 15px; color: var(--dim); margin: 0; max-width: 46em; }
+  .error { color: var(--rose); font-weight: 700; margin: 0; }
+
+  /* ---------- camera + calibration ---------- */
+  #setup { display: grid; place-items: center; overflow-y: auto; }
+  .setup-inner { width: min(100%, 640px); display: grid; gap: 18px; justify-items: center; text-align: center; }
+  .setup-inner h2 { font-family: var(--display); font-weight: 800; font-size: clamp(28px, 4vw, 44px); line-height: 1.05; margin: 0; text-wrap: balance; }
+  .setup-inner p { margin: 0; color: var(--dim); }
+  .mirror { position: relative; width: min(100%, 480px); aspect-ratio: 4 / 3; border-radius: 20px; overflow: hidden; background: var(--night-2); }
+  .mirror video, .selfie video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+  .mirror .oval { position: absolute; left: 30%; top: 14%; width: 40%; height: 72%; border: 3px dashed var(--dim); border-radius: 50%; transition: border-color .2s; }
+  .mirror.found .oval { border-color: var(--ok); border-style: solid; }
+  .face-state { font-weight: 700; }
+  .face-state.ok { color: var(--ok); }
+
+  #calib { background: var(--night); cursor: none; }
+  .calib-dot {
+    position: absolute;
+    width: 44px; height: 44px;
+    margin: -22px 0 0 -22px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #1b1304 0 18%, var(--iris) 20% 100%);
+    transition: left .55s cubic-bezier(.5, 0, .2, 1), top .55s cubic-bezier(.5, 0, .2, 1), transform .2s;
+  }
+  .calib-dot.hold { animation: shrink 1.2s ease-in forwards; }
+  @keyframes shrink { to { transform: scale(.45); } }
+  .calib-text { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; color: var(--dim); font-size: 20px; max-width: 26em; pointer-events: none; }
+  .calib-text b { display: block; color: var(--paper); font-family: var(--display); font-size: 30px; font-weight: 800; }
+
+  /* ---------- game ---------- */
+  #game { display: grid; grid-template-rows: auto 1fr auto; gap: 14px; }
+  .hud { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; }
+  .selfie { position: relative; width: 104px; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; background: var(--night-2); }
+  .target { font-family: var(--display); font-weight: 800; font-size: clamp(24px, 3.4vw, 44px); letter-spacing: .08em; line-height: 1; display: flex; flex-wrap: wrap; gap: .12em; }
+  .target span { color: rgba(246, 239, 230, .32); }
+  .target span.done { color: var(--iris); }
+  .target span.space { width: .5em; }
+  .clock { font-family: var(--display); font-weight: 800; font-size: clamp(30px, 4vw, 52px); font-variant-numeric: tabular-nums; line-height: 1; text-align: right; }
+  .clock small { display: block; font-family: var(--body); font-weight: 400; font-size: 14px; color: var(--dim); letter-spacing: .06em; }
+  .board { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 14px; min-height: 0; }
+  .key {
+    --p: 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 22px;
+    background: var(--night-2);
+    border: 3px solid var(--night-3);
+    display: grid;
+    place-items: center;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(30px, 5vw, 72px);
+    letter-spacing: .12em;
+    line-height: 1;
+    user-select: none;
+  }
+  .key > span { text-align: center; }
+  .key small { display: block; font-family: var(--body); font-weight: 400; font-size: 16px; letter-spacing: .04em; color: var(--dim); margin-top: 8px; text-align: center; }
+  .key::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: var(--iris);
+    opacity: .45;
+    transform: scaleY(var(--p));
+    transform-origin: bottom;
+    pointer-events: none;
+  }
+  .key.gaze { border-color: var(--iris); }
+  .key.hint { box-shadow: inset 0 0 0 3px var(--iris-soft); border-style: dashed; border-color: rgba(242, 169, 59, .55); }
+  .key.gaze.hint { border-style: solid; border-color: var(--iris); }
+  .key.empty { background: transparent; border-color: transparent; }
+  .key.hit { animation: hit .35s ease-out; }
+  @keyframes hit { from { background: var(--iris); } }
+  .key.typed {
+    background: transparent;
+    border: 3px dashed var(--night-3);
+    font-size: clamp(24px, 3.4vw, 50px);
+    letter-spacing: .06em;
+    color: var(--paper);
+    text-align: center;
+    padding: 10px;
+  }
+  .typed-line { word-break: break-all; }
+  .typed-line .caret { display: inline-block; width: .08em; height: .9em; background: var(--iris); vertical-align: -.08em; margin-left: .05em; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--dim); font-size: 15px; }
+  .foot button { background: transparent; color: var(--dim); text-decoration: underline; padding: 6px 0; }
+  .foot button:hover { color: var(--paper); }
+  .gaze-dot {
+    position: fixed;
+    left: 0; top: 0;
+    width: 46px; height: 46px;
+    margin: -23px 0 0 -23px;
+    border-radius: 50%;
+    border: 3px solid var(--iris);
+    background: var(--iris-soft);
+    pointer-events: none;
+    z-index: 20;
+    will-change: transform;
+  }
+  .toast {
+    position: fixed; left: 50%; top: 22px; transform: translateX(-50%);
+    background: var(--paper); color: var(--night);
+    font-weight: 700; padding: 12px 20px; border-radius: 12px;
+    z-index: 30; max-width: calc(100% - 32px); text-align: center;
+  }
+  .lost {
+    position: fixed; inset: 0;
+    display: grid; place-items: center;
+    background: rgba(18, 15, 36, .78);
+    z-index: 15;
+    font-family: var(--display); font-weight: 800; font-size: clamp(26px, 4vw, 42px);
+    text-align: center; padding: 16px;
+  }
+
+  /* ---------- reveal ---------- */
+  #reveal { overflow-y: auto; display: grid; place-items: center; background: #0b0918; }
+  .reveal-inner { width: min(100%, 820px); display: grid; gap: 26px; padding-block: 28px; }
+  .score { display: grid; gap: 6px; }
+  .score .big { font-family: var(--display); font-weight: 800; font-size: clamp(64px, 13vw, 150px); line-height: .9; color: var(--iris); font-variant-numeric: tabular-nums; }
+  .score .what { font-size: clamp(19px, 2.4vw, 25px); }
+  .score .stats { color: var(--dim); font-size: 16px; }
+  .turn { display: grid; gap: 18px; border-top: 2px solid var(--night-3); padding-top: 26px; }
+  .turn .line1 { font-family: var(--display); font-weight: 800; font-size: clamp(34px, 6vw, 68px); line-height: 1; margin: 0; text-wrap: balance; }
+  .turn .line2 { font-size: clamp(19px, 2.4vw, 25px); margin: 0; max-width: 34em; text-wrap: pretty; }
+  .turn .line2 b { color: var(--iris); }
+  .turn .line3 { color: var(--dim); margin: 0; max-width: 40em; }
+  .reveal-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .share-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; color: var(--dim); font-size: 15px; }
+  .share-row a { color: var(--paper); }
+  .fade { opacity: 1; }
+  .reveal-go .fade { animation: rise .9s ease-out both; }
+  .reveal-go .d1 { animation-delay: .1s; }
+  .reveal-go .d2 { animation-delay: 1.6s; }
+  .reveal-go .d3 { animation-delay: 2.8s; }
+  .reveal-go .d4 { animation-delay: 3.8s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+
+  @media (max-width: 700px) {
+    body { overflow: auto; }
+    .hud { grid-template-columns: 1fr auto; }
+    .selfie { display: none; }
+    .key { font-size: 28px; border-radius: 14px; }
+    .board { gap: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-go .fade, .calib-dot.hold, .key.hit, .typed-line .caret { animation: none !important; }
+    .calib-dot { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="eye" viewBox="0 0 88 44">
+    <path d="M4 22 C 22 2, 66 2, 84 22 C 66 42, 22 42, 4 22 Z" fill="none" stroke="#f6efe6" stroke-width="3.5"/>
+    <circle cx="44" cy="22" r="12" fill="#f2a93b"/>
+    <circle cx="44" cy="22" r="5" fill="#120f24"/>
+  </symbol>
+</svg>
+
+<!-- ============ INTRO ============ -->
+<section class="screen" id="intro">
+  <div class="intro-inner">
+    <svg class="eye-mark" aria-hidden="true"><use href="#eye"></use></svg>
+    <p class="kicker">The eye-gaze challenge</p>
+    <h1>Say it with your <em>eyes</em>.</h1>
+    <p class="lede">Spell a short message using <b>only your eyes</b>. No mouse, no keyboard, no touching. Your webcam watches where you look. Hold your gaze on a letter to choose it.</p>
+    <div class="friend" id="friend" hidden></div>
+    <div>
+      <div class="field-label">Choose your message</div>
+      <div class="phrases" id="phrases"></div>
+    </div>
+    <div class="actions">
+      <button class="btn-main" id="go-cam" type="button">Start with my webcam</button>
+      <button class="btn-ghost" id="go-mouse" type="button">No webcam? Use the mouse, no clicking</button>
+    </div>
+    <p class="error" id="intro-error" hidden></p>
+    <p class="fine">Your camera picture never leaves your device. Face tracking runs inside your browser and nothing is recorded or uploaded. Works best on a laptop or desktop in a well-lit room.</p>
+  </div>
+</section>
+
+<!-- ============ CAMERA SETUP ============ -->
+<section class="screen" id="setup" hidden>
+  <div class="setup-inner">
+    <h2>Put your face in the oval</h2>
+    <p>Sit about an arm's length from the screen, with light on your face.</p>
+    <div class="mirror" id="mirror"><div class="oval"></div></div>
+    <p class="face-state" id="face-state">Starting the camera…</p>
+    <button class="btn-main" id="go-calib" type="button" disabled>Next: follow the dot</button>
+    <button class="btn-ghost" id="setup-back" type="button">Back</button>
+  </div>
+</section>
+
+<!-- ============ CALIBRATION ============ -->
+<section class="screen" id="calib" hidden>
+  <div class="calib-text" id="calib-text"><b>Follow the dot with your eyes</b>Keep your head fairly still. 9 dots, about 20 seconds.</div>
+  <div class="calib-dot" id="calib-dot" hidden></div>
+</section>
+
+<!-- ============ GAME ============ -->
+<section class="screen" id="game" hidden>
+  <div class="hud">
+    <div class="selfie" id="selfie" aria-hidden="true"></div>
+    <div>
+      <div class="field-label">Spell this</div>
+      <div class="target" id="target" aria-live="polite"></div>
+    </div>
+    <div class="clock" id="clock">0:00<small>time</small></div>
+  </div>
+  <main class="board" id="board" aria-label="Eye-gaze keyboard"></main>
+  <div class="foot">
+    <span id="foot-tip">Look at a group of letters, then at the letter. The dashed box shows where to look next.</span>
+    <span><button type="button" id="recal">Recalibrate</button> · <button type="button" id="giveup">I give up</button></span>
+  </div>
+</section>
+
+<div class="gaze-dot" id="gaze-dot" hidden></div>
+<div class="lost" id="lost" hidden>We can't see your face.<br>Look back at the screen.</div>
+<div class="toast" id="toast" hidden></div>
+
+<!-- ============ REVEAL ============ -->
+<section class="screen" id="reveal" hidden>
+  <div class="reveal-inner" id="reveal-inner">
+    <div class="score fade d1">
+      <div class="big" id="r-time">0:47</div>
+      <div class="what" id="r-what"></div>
+      <div class="stats" id="r-stats"></div>
+    </div>
+    <div class="turn">
+      <p class="line1 fade d2" id="r-line1">For you, it was a game.</p>
+      <p class="line2 fade d3">For people living with <b>ALS, locked-in syndrome, cerebral palsy or a high spinal cord injury</b>, this is how they speak. Every word, to everyone they love, every day. Often it is their only way.</p>
+      <p class="line3 fade d3">An eye-gaze communication device can cost thousands. Many families wait years for one, or never get one.</p>
+      <div class="reveal-actions fade d4">
+        <a class="btn-main btn" id="donate" href="#" target="_blank" rel="noopener">Help someone speak. Donate</a>
+        <button class="btn-ghost" id="share" type="button">Challenge a friend</button>
+        <button class="btn-ghost" id="again" type="button">Play again</button>
+      </div>
+      <div class="share-row fade d4" id="share-row">
+        Share: <a id="share-x" href="#" target="_blank" rel="noopener">X</a> · <a id="share-wa" href="#" target="_blank" rel="noopener">WhatsApp</a> · <a id="share-fb" href="#" target="_blank" rel="noopener">Facebook</a> · <span>#SayItWithYourEyes</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  'use strict';
+
+  // ==================== CONFIG ====================
+  var CONFIG = {
+    // Where the Donate button goes. Set this to the real donation page.
+    donateUrl: '',
+    // Public address of this game, used in share links.
+    shareUrl: 'https://lzys.github.io/Donacha.in/eye-challenge/',
+    hashtag: 'SayItWithYourEyes',
+    dwellMs: 1000,
+    graceMs: 300,
+    mouseDwellMs: 1000,
+    mediapipe: 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1',
+    model: 'face_landmarker.task'
+  };
+  var PHRASES = ['I LOVE YOU', 'THANK YOU', 'HELP ME', 'I AM COLD'];
+
+  // Two-step keyboard, the layout many eye-gaze users know: pick a group, then a letter.
+  // Cell 4 (the centre) is a safe place to rest your eyes; it shows what you typed.
+  var GROUPS = [
+    { cell: 0, chars: 'ABCD' }, { cell: 1, chars: 'EFGH' }, { cell: 2, chars: 'IJKL' },
+    { cell: 3, chars: 'MNOP' }, { cell: 5, chars: 'QRST' },
+    { cell: 6, chars: 'UVWX' }, { cell: 7, chars: 'YZ ' }
+  ];
+  var DELETE_CELL = 8, BACK_CELL = 7, LETTER_CELLS = [0, 2, 6, 8];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var screens = ['intro', 'setup', 'calib', 'game', 'reveal'];
+  function show(id) { screens.forEach(function (s) { $(s).hidden = s !== id; }); }
+
+  var toastTimer = null;
+  function toast(msg) {
+    $('toast').textContent = msg; $('toast').hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { $('toast').hidden = true; }, 2600);
+  }
+  function fmt(ms) { var s = Math.round(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+
+  // ==================== INTRO ====================
+  var params = new URLSearchParams(location.search);
+  var phraseIdx = Math.max(0, Math.min(PHRASES.length - 1, parseInt(params.get('p'), 10) || 0));
+  var friendTime = parseInt(params.get('t'), 10);
+  if (friendTime > 0) {
+    $('friend').hidden = false;
+    $('friend').textContent = 'A friend said “' + PHRASES[phraseIdx] + '” with their eyes in ' + fmt(friendTime * 1000) + '. Can you beat them?';
+  }
+  function renderPhrases() {
+    var box = $('phrases'); box.innerHTML = '';
+    PHRASES.forEach(function (p, i) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'phrase'; b.textContent = p;
+      b.setAttribute('aria-pressed', i === phraseIdx ? 'true' : 'false');
+      b.addEventListener('click', function () { phraseIdx = i; renderPhrases(); });
+      box.appendChild(b);
+    });
+  }
+  renderPhrases();
+
+  // ==================== CAMERA + FACE TRACKING ====================
+  var video = document.createElement('video');
+  video.muted = true; video.playsInline = true; video.autoplay = true;
+  var landmarker = null, stream = null, trackingOn = false, lastVideoTime = -1;
+  var face = { seen: false, lastSeen: 0, feat: null };
+
+  function loadLandmarker() {
+    return import(CONFIG.mediapipe + '/vision_bundle.mjs').then(function (vision) {
+      return vision.FilesetResolver.forVisionTasks(CONFIG.mediapipe + '/wasm').then(function (files) {
+        function make(delegate) {
+          return vision.FaceLandmarker.createFromOptions(files, {
+            baseOptions: { modelAssetPath: CONFIG.model, delegate: delegate },
+            runningMode: 'VIDEO',
+            numFaces: 1,
+            outputFacialTransformationMatrixes: true
+          });
+        }
+        return make('GPU').catch(function () { return make('CPU'); });
+      });
+    });
+  }
+
+  function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      return Promise.reject(new Error('This browser cannot use a webcam here.'));
+    }
+    return navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false })
+      .then(function (s) { stream = s; video.srcObject = s; return video.play().catch(function () {}); });
+  }
+
+  function placeVideo(box) { if (video.parentNode !== box) box.insertBefore(video, box.firstChild); }
+
+  // Features for gaze: where each iris sits inside its eye (0..1 across, signed
+  // up/down), plus head direction and position so small head turns are allowed.
+  function eyeFeat(lm, a, b, top, bottom, iris) {
+    var ax = lm[a].x, ay = lm[a].y, bx = lm[b].x, by = lm[b].y;
+    var dx = bx - ax, dy = by - ay, w = Math.hypot(dx, dy) || 1e-6;
+    var ux = dx / w, uy = dy / w;
+    var ix = lm[iris].x - ax, iy = lm[iris].y - ay;
+    var along = (ix * ux + iy * uy) / w;
+    var midx = (lm[top].x + lm[bottom].x) / 2 - ax, midy = (lm[top].y + lm[bottom].y) / 2 - ay;
+    var across = ((iy - midy) * ux - (ix - midx) * uy) / w;
+    var open = Math.hypot(lm[top].x - lm[bottom].x, lm[top].y - lm[bottom].y) / w;
+    return { along: along, across: across, open: open };
+  }
+  function features(res) {
+    var lm = res.faceLandmarks && res.faceLandmarks[0];
+    if (!lm || lm.length < 478) return null;
+    // Pair each iris centre (468, 473) with the eye whose corners it sits between.
+    var midA = { x: (lm[33].x + lm[133].x) / 2, y: (lm[33].y + lm[133].y) / 2 };
+    var i1 = 468, i2 = 473;
+    if (Math.hypot(lm[i1].x - midA.x, lm[i1].y - midA.y) > Math.hypot(lm[i2].x - midA.x, lm[i2].y - midA.y)) { i1 = 473; i2 = 468; }
+    var e1 = eyeFeat(lm, 33, 133, 159, 145, i1);
+    var e2 = eyeFeat(lm, 362, 263, 386, 374, i2);
+    var m = res.facialTransformationMatrixes && res.facialTransformationMatrixes[0] && res.facialTransformationMatrixes[0].data;
+    var fx = m ? m[8] : 0, fy = m ? m[9] : 0;
+    return {
+      blink: e1.open < 0.14 && e2.open < 0.14,
+      v: [e1.along, e1.across, e2.along, e2.across, fx, fy, lm[1].x, lm[1].y]
+    };
+  }
+
+  function trackLoop() {
+    if (!trackingOn) return;
+    if (landmarker && video.readyState >= 2 && video.currentTime !== lastVideoTime) {
+      lastVideoTime = video.currentTime;
+      var res = null;
+      try { res = landmarker.detectForVideo(video, performance.now()); } catch (e) {}
+      var f = res && features(res);
+      if (f) {
+        face.seen = true; face.lastSeen = performance.now();
+        if (!f.blink) face.feat = f.v;
+      } else {
+        face.seen = false;
+      }
+      onFrame();
+    }
+    requestAnimationFrame(trackLoop);
+  }
+
+  // ==================== GAZE MODEL (ridge regression) ====================
+  var model = null, mode = 'cam';
+  function solve(A, b) {
+    var n = b.length, M = A.map(function (r, i) { return r.concat([b[i]]); });
+    for (var c = 0; c < n; c++) {
+      var p = c;
+      for (var r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+      var t = M[c]; M[c] = M[p]; M[p] = t;
+      var d = M[c][c] || 1e-9;
+      for (var r2 = 0; r2 < n; r2++) {
+        if (r2 === c) continue;
+        var k = M[r2][c] / d;
+        for (var j = c; j <= n; j++) M[r2][j] -= k * M[c][j];
+      }
+    }
+    return M.map(function (r, i) { return r[n] / (r[i] || 1e-9); });
+  }
+  function fit(samples) {
+    var n = samples.length, dim = samples[0].f.length;
+    var mean = new Array(dim).fill(0), sd = new Array(dim).fill(0);
+    samples.forEach(function (s) { s.f.forEach(function (v, i) { mean[i] += v / n; }); });
+    samples.forEach(function (s) { s.f.forEach(function (v, i) { sd[i] += (v - mean[i]) * (v - mean[i]) / n; }); });
+    sd = sd.map(function (v) { return Math.sqrt(v) || 1; });
+    function row(f) { return [1].concat(f.map(function (v, i) { return (v - mean[i]) / sd[i]; })); }
+    var D = dim + 1, lambda = 2.0;
+    var A = [], bx = new Array(D).fill(0), by = new Array(D).fill(0);
+    for (var i = 0; i < D; i++) A.push(new Array(D).fill(0));
+    samples.forEach(function (s) {
+      var z = row(s.f);
+      for (var i = 0; i < D; i++) {
+        bx[i] += z[i] * s.x; by[i] += z[i] * s.y;
+        for (var j = 0; j < D; j++) A[i][j] += z[i] * z[j];
+      }
+    });
+    for (var k = 1; k < D; k++) A[k][k] += lambda;
+    var wx = solve(A, bx), wy = solve(A, by);
+    return function (f) {
+      var z = row(f), x = 0, y = 0;
+      for (var i = 0; i < D; i++) { x += z[i] * wx[i]; y += z[i] * wy[i]; }
+      return { x: x, y: y };
+    };
+  }
+
+  // Smoothed gaze point in screen pixels: calm while fixating, quick on big jumps.
+  var gazePt = null;
+  function updateGaze(raw) {
+    var W = innerWidth, H = innerHeight;
+    raw.x = Math.max(0, Math.min(W, raw.x)); raw.y = Math.max(0, Math.min(H, raw.y));
+    if (!gazePt) { gazePt = raw; return; }
+    var d = Math.hypot(raw.x - gazePt.x, raw.y - gazePt.y);
+    var a = d > Math.min(W, H) * 0.22 ? 0.5 : 0.16;
+    gazePt = { x: gazePt.x + (raw.x - gazePt.x) * a, y: gazePt.y + (raw.y - gazePt.y) * a };
+  }
+
+  // ==================== SETUP SCREEN ====================
+  var setupActive = false;
+  function onFrame() {
+    if (setupActive) {
+      var ok = face.seen;
+      $('mirror').classList.toggle('found', ok);
+      $('face-state').textContent = ok ? 'Got you. Keep your face in the oval.' : 'Looking for your face…';
+      $('face-state').classList.toggle('ok', ok);
+      $('go-calib').disabled = !ok;
+    }
+    if (calib.active && calib.collecting && face.seen && face.feat) {
+      calib.samples.push({ f: face.feat.slice(), x: calib.pt.x, y: calib.pt.y });
+    }
+    if (game.active && mode === 'cam' && model && face.feat) {
+      updateGaze(model(face.feat));
+    }
+  }
+
+  $('go-cam').addEventListener('click', function () {
+    mode = 'cam';
+    $('intro-error').hidden = true;
+    show('setup'); setupActive = true;
+    placeVideo($('mirror'));
+    $('face-state').textContent = 'Starting the camera…';
+    var camP = stream ? Promise.resolve() : startCamera();
+    camP.then(function () {
+      $('face-state').textContent = 'Loading face tracking…';
+      return landmarker ? landmarker : loadLandmarker().then(function (l) { landmarker = l; return l; });
+    }).then(function () {
+      trackingOn = true; requestAnimationFrame(trackLoop);
+    }).catch(function (err) {
+      setupActive = false;
+      show('intro');
+      var msg = (err && err.name === 'NotAllowedError')
+        ? 'The camera was blocked. Allow camera access for this page, or play with the mouse instead.'
+        : 'The webcam could not start here (' + ((err && err.message) || 'unknown error') + '). You can play with the mouse instead.';
+      $('intro-error').textContent = msg; $('intro-error').hidden = false;
+    });
+  });
+  $('setup-back').addEventListener('click', function () { setupActive = false; show('intro'); });
+  $('go-calib').addEventListener('click', function () { setupActive = false; runCalibration(); });
+
+  // ==================== CALIBRATION ====================
+  var calib = { active: false, collecting: false, samples: [], pt: null };
+  function runCalibration() {
+    show('calib');
+    try { if (document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(function () {}); } catch (e) {}
+    calib.active = true; calib.samples = [];
+    var dot = $('calib-dot'), text = $('calib-text');
+    text.hidden = false; dot.hidden = true;
+    var order = [[.5, .5], [.08, .1], [.5, .1], [.92, .1], [.92, .5], [.5, .5], [.08, .5], [.08, .9], [.5, .9], [.92, .9], [.5, .5]];
+    var i = 0;
+    setTimeout(function next() {
+      text.hidden = true; dot.hidden = false;
+      if (i >= order.length) return finishCalibration();
+      var W = innerWidth, H = innerHeight;
+      calib.pt = { x: order[i][0] * W, y: order[i][1] * H };
+      dot.classList.remove('hold');
+      dot.style.left = calib.pt.x + 'px'; dot.style.top = calib.pt.y + 'px';
+      // let the eyes land on the dot before sampling
+      setTimeout(function () {
+        void dot.offsetWidth; dot.classList.add('hold');
+        calib.collecting = true;
+        setTimeout(function () { calib.collecting = false; i++; next(); }, 1100);
+      }, 750);
+    }, 2200);
+  }
+  function finishCalibration() {
+    calib.active = false;
+    $('calib-dot').hidden = true;
+    if (calib.samples.length < 40) {
+      toast('We could not see your eyes well enough. Let’s try again with more light.');
+      show('setup'); setupActive = true; placeVideo($('mirror'));
+      return;
+    }
+    model = fit(calib.samples);
+    gazePt = null;
+    startGame();
+  }
+
+  // ==================== GAME ====================
+  var game = { active: false, typed: '', group: null, start: 0, looks: 0, done: false };
+  var board = $('board'), keys = [];
+  for (var c = 0; c < 9; c++) {
+    var k = document.createElement('div');
+    k.className = 'key'; k._cell = c;
+    board.appendChild(k); keys.push(k);
+  }
+  var target = function () { return PHRASES[phraseIdx]; };
+
+  function nextNeeded() {
+    var t = target(), s = game.typed;
+    if (t.indexOf(s) !== 0) return { del: true };
+    return { ch: t.charAt(s.length) };
+  }
+
+  function renderBoard() {
+    var need = nextNeeded();
+    keys.forEach(function (k) {
+      k.className = 'key'; k.innerHTML = ''; k._act = null; k.style.setProperty('--p', 0);
+    });
+    var centre = keys[4];
+    centre.className = 'key typed';
+    centre.innerHTML = '<div class="typed-line"></div>';
+    centre.firstChild.textContent = game.typed.replace(/ /g, ' ');
+    var caret = document.createElement('span'); caret.className = 'caret'; centre.firstChild.appendChild(caret);
+
+    if (game.group === null) {
+      GROUPS.forEach(function (g, gi) {
+        var k = keys[g.cell];
+        k.innerHTML = '<span>' + g.chars.replace(' ', '␣').split('').join(' ') + (g.chars.indexOf(' ') >= 0 ? '<small>space</small>' : '') + '</span>';
+        k._act = function () { game.group = gi; renderBoard(); };
+        if (!need.del && g.chars.indexOf(need.ch) >= 0) k.classList.add('hint');
+      });
+      var del = keys[DELETE_CELL];
+      del.innerHTML = '<span>⌫<small>delete</small></span>';
+      del._act = function () { game.typed = game.typed.slice(0, -1); renderBoard(); };
+      if (need.del) del.classList.add('hint');
+    } else {
+      var g = GROUPS[game.group];
+      var right = !need.del && g.chars.indexOf(need.ch) >= 0;
+      keys.forEach(function (k, i) { if (i !== 4) k.classList.add('empty'); });
+      g.chars.split('').forEach(function (ch, j) {
+        var k = keys[LETTER_CELLS[j]];
+        k.classList.remove('empty');
+        k.innerHTML = ch === ' ' ? '<span>␣<small>space</small></span>' : ch;
+        k._act = function () { game.typed += ch; game.group = null; renderBoard(); checkDone(); };
+        if (right && ch === need.ch) k.classList.add('hint');
+      });
+      var back = keys[BACK_CELL];
+      back.classList.remove('empty');
+      back.innerHTML = '<span>↩<small>back</small></span>';
+      back._act = function () { game.group = null; renderBoard(); };
+      if (!right) back.classList.add('hint');
+    }
+    renderTarget();
+  }
+
+  function renderTarget() {
+    var t = target(), box = $('target'); box.innerHTML = '';
+    var okLen = 0;
+    while (okLen < game.typed.length && game.typed[okLen] === t[okLen]) okLen++;
+    t.split('').forEach(function (ch, i) {
+      var s = document.createElement('span');
+      if (ch === ' ') { s.className = 'space'; } else { s.textContent = ch; if (i < okLen) s.className = 'done'; }
+      box.appendChild(s);
+    });
+    box.setAttribute('aria-label', 'Spell ' + t + '. Typed so far: ' + game.typed);
+  }
+
+  function checkDone() {
+    if (game.typed === target()) {
+      game.done = true;
+      setTimeout(function () { endGame(false); }, 900);
+    }
+  }
+
+  function startGame() {
+    game.active = true; game.typed = ''; game.group = null; game.looks = 0; game.done = false;
+    game.start = performance.now();
+    dwell.el = null; dwell.p = 0; dwell.locked = null;
+    show('game');
+    if (mode === 'cam') placeVideo($('selfie'));
+    $('selfie').hidden = mode !== 'cam';
+    $('gaze-dot').hidden = false;
+    $('foot-tip').textContent = mode === 'cam'
+      ? 'Look at a group of letters, then at the letter. The dashed box shows where to look next.'
+      : 'Mouse mode: hover to choose. Clicking does nothing, just like for someone who can only move their eyes.';
+    renderBoard();
+    requestAnimationFrame(gameLoop);
+  }
+
+  // Dwell on keys, with the same forgiveness for shaky gaze as the real board.
+  var dwell = { el: null, p: 0, off: 0, locked: null, lockedOff: 0, last: 0 };
+  function gameLoop(now) {
+    if (!game.active) return;
+    var dt = dwell.last ? Math.min(now - dwell.last, 100) : 0; dwell.last = now;
+    $('clock').firstChild.textContent = fmt(now - game.start);
+
+    var lost = mode === 'cam' && now - face.lastSeen > 700;
+    $('lost').hidden = !lost || game.done;
+
+    if (gazePt) $('gaze-dot').style.transform = 'translate(' + gazePt.x + 'px,' + gazePt.y + 'px)';
+
+    var under = null;
+    if (gazePt && !lost && !game.done) {
+      var el = document.elementFromPoint(gazePt.x, gazePt.y);
+      under = el && el.closest ? el.closest('.key') : null;
+      if (under && !under._act) under = null;
+    }
+    if (under === dwell.locked) dwell.lockedOff = 0;
+    else if (dwell.locked && !dwell.lockedOff) dwell.lockedOff = now;
+    if (dwell.locked && dwell.lockedOff && now - dwell.lockedOff > CONFIG.graceMs) dwell.locked = null;
+
+    if (under !== dwell.el) {
+      if (under) {
+        if (dwell.el) { dwell.el.classList.remove('gaze'); dwell.el.style.setProperty('--p', 0); }
+        dwell.el = under; dwell.p = 0; dwell.off = 0; under.classList.add('gaze');
+      } else if (dwell.el && !dwell.off) {
+        dwell.off = now;
+      }
+    } else { dwell.off = 0; }
+    if (dwell.el && dwell.off && now - dwell.off > CONFIG.graceMs) {
+      dwell.el.classList.remove('gaze'); dwell.el.style.setProperty('--p', 0); dwell.el = null;
+    }
+
+    var ms = mode === 'cam' ? CONFIG.dwellMs : CONFIG.mouseDwellMs;
+    if (dwell.el && !dwell.off && dwell.el !== dwell.locked && dwell.el._act) {
+      dwell.p += dt / ms;
+      if (dwell.p >= 1) {
+        var hitEl = dwell.el, act = hitEl._act;
+        dwell.locked = hitEl; dwell.lockedOff = 0; dwell.p = 0;
+        game.looks++;
+        act();
+        // the board re-renders into the same cells; flash the one that fired
+        hitEl.classList.remove('hit'); void hitEl.offsetWidth; hitEl.classList.add('hit');
+        hitEl.classList.remove('gaze'); dwell.el = null;
+        // after a re-render the new key under the gaze needs a fresh look
+        dwell.locked = hitEl;
+      } else {
+        dwell.el.style.setProperty('--p', dwell.p.toFixed(3));
+      }
+    }
+    requestAnimationFrame(gameLoop);
+  }
+
+  // Mouse mode: the pointer stands in for the eyes, and clicks are refused.
+  document.addEventListener('pointermove', function (e) {
+    if (game.active && mode === 'mouse') gazePt = { x: e.clientX, y: e.clientY };
+  }, { passive: true });
+  board.addEventListener('click', function () {
+    if (mode === 'mouse') toast('No clicking! Someone who can only move their eyes can’t click either. Hold still on a key.');
+  });
+
+  $('go-mouse').addEventListener('click', function () { mode = 'mouse'; gazePt = null; startGame(); });
+  $('recal').addEventListener('click', function () {
+    if (mode !== 'cam') { toast('Recalibrating only applies to webcam mode.'); return; }
+    game.active = false; $('gaze-dot').hidden = true; $('lost').hidden = true;
+    placeVideo($('mirror')); runCalibration();
+  });
+  $('giveup').addEventListener('click', function () { endGame(true); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && game.active) endGame(true); });
+
+  // ==================== REVEAL ====================
+  var lastResult = null;
+  function endGame(gaveUp) {
+    if (!game.active) return;
+    game.active = false;
+    $('gaze-dot').hidden = true; $('lost').hidden = true;
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+    var ms = performance.now() - game.start;
+    var words = target().split(' ').length;
+    var letters = target().replace(/ /g, '').length;
+    lastResult = { secs: Math.round(ms / 1000), gaveUp: gaveUp };
+
+    $('r-time').textContent = fmt(ms);
+    if (gaveUp) {
+      $('r-what').textContent = 'You stopped trying to say “' + target() + '”.';
+      $('r-stats').textContent = game.looks + ' looks, ' + (game.typed.length ? '“' + game.typed + '” typed' : 'nothing typed yet');
+      $('r-line1').textContent = 'You could stop. They can’t.';
+    } else {
+      $('r-what').textContent = 'You said “' + target() + '” with your eyes.';
+      $('r-stats').textContent = words + (words === 1 ? ' word, ' : ' words, ') + letters + ' letters, ' + game.looks + ' looks' + (mode === 'mouse' ? ' (mouse mode)' : '');
+      $('r-line1').textContent = 'For you, it was a game.';
+    }
+    setupShare();
+    show('reveal');
+    var inner = $('reveal-inner');
+    inner.classList.remove('reveal-go'); void inner.offsetWidth; inner.classList.add('reveal-go');
+    $('reveal').scrollTop = 0;
+  }
+
+  function shareLink() {
+    var u = CONFIG.shareUrl + '?p=' + phraseIdx;
+    if (lastResult && !lastResult.gaveUp) u += '&t=' + lastResult.secs;
+    return u;
+  }
+  function shareText() {
+    if (lastResult && !lastResult.gaveUp) {
+      return 'I said “' + target() + '” using only my eyes in ' + fmt(lastResult.secs * 1000) + '. For some people it’s the only way to speak. Can you beat me?';
+    }
+    return 'I tried to say “' + target() + '” using only my eyes. For some people it’s the only way to speak. Can you do it?';
+  }
+  function setupShare() {
+    var url = shareLink(), text = shareText(), tag = '#' + CONFIG.hashtag;
+    $('share-x').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text + ' ' + tag) + '&url=' + encodeURIComponent(url);
+    $('share-wa').href = 'https://wa.me/?text=' + encodeURIComponent(text + ' ' + url);
+    $('share-fb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+    var d = $('donate');
+    if (CONFIG.donateUrl) { d.href = CONFIG.donateUrl; d.hidden = false; }
+    else { d.hidden = true; }
+  }
+  $('share').addEventListener('click', function () {
+    var url = shareLink(), text = shareText() + ' #' + CONFIG.hashtag;
+    if (navigator.share) {
+      navigator.share({ title: 'Say It With Your Eyes', text: text, url: url }).catch(function () {});
+      return;
+    }
+    var full = text + ' ' + url;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(full).then(function () { toast('Link copied. Paste it to a friend.'); }, function () { toast(full); });
+    } else { toast(full); }
+  });
+  $('again').addEventListener('click', function () { show('intro'); renderPhrases(); });
+
+  show('intro');
+})();
+</script>
+</body>
+</html>
