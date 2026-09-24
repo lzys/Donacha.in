@@ -1,0 +1,531 @@
+<title>Snorkel Talk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+  :root {
+    --ground: #e6f1f0;
+    --surface: #ffffff;
+    --ink: #0c2830;
+    --muted: #4a6a70;
+    --line: #b9d3d2;
+    --accent: #0a6f7e;
+    --accent-ink: #ffffff;
+    --dwell: #ff8a5b;
+    --said-bg: #0c2830;
+    --said-ink: #f2fbfa;
+    --p1: #2f8fb0; --p2: #d49a1c; --p3: #1f9e7c; --p4: #c4568a; --p5: #5c6f8c;
+    --radius: 14px;
+    --gap: clamp(8px, 1.2vw, 14px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #06171c; --surface: #0f2a31; --ink: #e5f4f2; --muted: #9dbcbf;
+      --line: #22474f; --accent: #3fb8c7; --accent-ink: #04161a; --dwell: #ff9d73;
+      --said-bg: #e5f4f2; --said-ink: #06171c;
+      --p1: #5ab6d6; --p2: #f0bd4c; --p3: #4cc9a4; --p4: #e57fb0; --p5: #93a6c4;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #06171c; --surface: #0f2a31; --ink: #e5f4f2; --muted: #9dbcbf;
+    --line: #22474f; --accent: #3fb8c7; --accent-ink: #04161a; --dwell: #ff9d73;
+    --said-bg: #e5f4f2; --said-ink: #06171c;
+    --p1: #5ab6d6; --p2: #f0bd4c; --p3: #4cc9a4; --p4: #e57fb0; --p5: #93a6c4;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+  }
+  .app {
+    height: 100%;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: var(--gap);
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  button {
+    font: inherit;
+    color: inherit;
+    border: 0;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:focus-visible { outline: 4px solid var(--accent); outline-offset: 3px; }
+
+  /* dwell progress: fills from the bottom */
+  .dwellable::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 0;
+    background: var(--dwell);
+    opacity: .35;
+    pointer-events: none;
+  }
+  .dwellable.dwelling::after {
+    height: 100%;
+    transition: height var(--dwell-ms, 1200ms) linear;
+  }
+  .dwellable.hit { animation: hit .5s ease-out; }
+  @keyframes hit { 0% { box-shadow: 0 0 0 0 var(--dwell); } 100% { box-shadow: 0 0 0 14px transparent; } }
+
+  /* top: spoken phrase bar */
+  .said {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: var(--gap);
+    align-items: stretch;
+  }
+  .said-text {
+    background: var(--said-bg);
+    color: var(--said-ink);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    font-size: clamp(20px, 2.6vw, 34px);
+    font-weight: 700;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    min-height: 2.6em;
+    text-wrap: balance;
+  }
+  .said-text.empty { font-weight: 400; opacity: .85; }
+  .tool {
+    background: var(--surface);
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    padding: 8px 18px;
+    min-width: clamp(96px, 9vw, 150px);
+    font-size: clamp(16px, 1.5vw, 22px);
+    font-weight: 700;
+  }
+  .tool small { display: block; font-weight: 400; font-size: .72em; color: var(--muted); letter-spacing: .02em; }
+
+  /* phrase grid */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: var(--gap);
+    min-height: 0;
+  }
+  .tile {
+    background: var(--surface);
+    border: 2px solid var(--line);
+    border-top: 8px solid var(--page-color);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: clamp(16px, 1.75vw, 27px);
+    line-height: 1.22;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-wrap: balance;
+    min-height: 0;
+  }
+  .tile:hover { border-color: var(--page-color); }
+  .tile.chosen { background: var(--page-color); color: var(--surface); }
+
+  /* bottom: page navigation */
+  .nav {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--gap);
+  }
+  .arrow {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-radius: var(--radius);
+    padding: 14px 22px;
+    font-size: clamp(18px, 1.8vw, 26px);
+    font-weight: 700;
+    min-width: clamp(110px, 11vw, 180px);
+    min-height: 76px;
+  }
+  .tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--gap); }
+  .tab {
+    background: var(--surface);
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    font-size: clamp(14px, 1.35vw, 20px);
+    font-weight: 700;
+    line-height: 1.15;
+    min-height: 76px;
+  }
+  .tab small { display: block; font-weight: 400; color: var(--muted); font-size: .78em; font-variant-numeric: tabular-nums; }
+  .tab[aria-current="true"] { background: var(--tab-color); color: var(--surface); border-color: var(--tab-color); }
+  .tab[aria-current="true"] small { color: inherit; opacity: .85; }
+
+  /* start / settings overlay */
+  .overlay {
+    position: fixed; inset: 0;
+    background: color-mix(in srgb, var(--ground) 92%, transparent);
+    display: grid; place-items: center;
+    padding: 16px;
+    z-index: 5;
+  }
+  .panel {
+    background: var(--surface);
+    border: 2px solid var(--line);
+    border-radius: 20px;
+    padding: 28px;
+    max-width: 640px;
+    width: 100%;
+    box-sizing: border-box;
+    display: grid;
+    gap: 18px;
+  }
+  .panel h1 { margin: 0; font-size: clamp(28px, 4vw, 42px); text-wrap: balance; }
+  .panel p { margin: 0; color: var(--muted); line-height: 1.45; font-size: 17px; }
+  .field { display: grid; gap: 8px; }
+  .field-label { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .choices { display: flex; flex-wrap: wrap; gap: 8px; }
+  .choice {
+    background: var(--ground);
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .choice[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .go {
+    background: var(--accent); color: var(--accent-ink);
+    border-radius: 14px; padding: 20px; font-size: 24px; font-weight: 700;
+  }
+
+  @media (max-width: 760px) {
+    .app { height: auto; min-height: 100%; }
+    .board { grid-template-columns: repeat(2, 1fr); grid-template-rows: none; }
+    .tile { min-height: 96px; }
+    .said { grid-template-columns: 1fr 1fr; }
+    .said-text { grid-column: 1 / -1; }
+    .nav { grid-template-columns: 1fr 1fr; }
+    .tabs { grid-column: 1 / -1; grid-row: 1; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dwellable.hit { animation: none; }
+  }
+</style>
+
+<div class="app">
+  <header class="said">
+    <div class="said-text empty" id="said" aria-live="polite">Look at a phrase to say it</div>
+    <button class="tool dwellable" id="again" type="button">Say again<small>repeat</small></button>
+    <button class="tool dwellable" id="settings" type="button">Settings<small id="dwell-status">dwell 1.2 s</small></button>
+  </header>
+
+  <main class="board" id="board" aria-label="Phrases"></main>
+
+  <nav class="nav" aria-label="Pages">
+    <button class="arrow dwellable" id="prev" type="button">&larr; Back</button>
+    <div class="tabs" id="tabs"></div>
+    <button class="arrow dwellable" id="next" type="button">Next &rarr;</button>
+  </nav>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="panel" role="dialog" aria-labelledby="ov-title">
+    <h1 id="ov-title">Snorkel Talk</h1>
+    <p>75 phrases about snorkelling, across 5 pages. Rest your gaze on a phrase and it fills up, then it is spoken aloud. A normal click works too.</p>
+    <div class="field">
+      <span class="field-label">Dwell time (how long to look before selecting)</span>
+      <div class="choices" id="dwell-choices"></div>
+    </div>
+    <div class="field">
+      <span class="field-label">Voice</span>
+      <div class="choices" id="voice-choices"></div>
+    </div>
+    <button class="go" id="start" type="button">Start</button>
+    <p>A helper should click Start once. Browsers only allow speech after a real click.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var PAGES = [
+    { name: 'Slipping In', color: '--p1', phrases: [
+      'The first cold kiss of the sea',
+      'I slipped into another world',
+      'Silence wrapped around me like a blanket',
+      'My breath echoed like a slow drum',
+      'The water held me like a cradle',
+      'I floated like a leaf on glass',
+      'Weightless, like flying in slow motion',
+      'The waves rocked me gently',
+      'The sea swallowed every sound',
+      'Sunlight warmed my back as I drifted',
+      'I heard only my own heartbeat',
+      'My snorkel gurgled a silly song',
+      'My mask fogged my little window',
+      'Salt stung my lips and eyes',
+      'The cold made me shiver and gasp'
+    ]},
+    { name: 'Light & Colour', color: '--p2', phrases: [
+      'Sunbeams danced like golden ribbons',
+      'The water glowed a thousand blues',
+      'Light rippled on the sand like lace',
+      'The coral was a painted garden',
+      'Colours brighter than any rainbow',
+      'Everything shimmered like liquid glass',
+      'The sand below looked like rippled silk',
+      'Bubbles rose like silver pearls',
+      'The reef blazed orange and purple',
+      'It sparkled like a jewellery box',
+      'Wave shadows flickered below me',
+      'The deep blue went on forever',
+      'The water turned murky and grey',
+      'The blue below felt dark and endless',
+      'Clouds dimmed the underwater lights'
+    ]},
+    { name: 'Sea Creatures', color: '--p3', phrases: [
+      'A turtle glided by like a wise old sage',
+      'Fish swirled around me like confetti',
+      'A school of fish flashed like a mirror',
+      'A ray flew past like a silent bird',
+      'Clownfish peeked out of their anemone',
+      'A curious fish came to say hello',
+      'The octopus melted into the rocks',
+      'A little crab danced sideways',
+      'Parrotfish crunched the coral loudly',
+      'The fish let me join their parade',
+      'A jellyfish pulsed like a ghost',
+      'An eel stared out from its cave',
+      'Sea urchins bristled like black pincushions',
+      'A shadow below made my heart race',
+      'I was scared something would touch me'
+    ]},
+    { name: 'Wonder & Joy', color: '--p4', phrases: [
+      'I felt completely free',
+      'My worries floated away',
+      'A secret world, just for me',
+      'I was a guest in the ocean’s home',
+      'Time slowed down to nothing',
+      'My heart felt as light as foam',
+      'Pure peace from head to fins',
+      'I felt part of the sea',
+      'Like dreaming with my eyes open',
+      'The ocean gave me a gift today',
+      'I laughed into my snorkel',
+      'I felt brave and alive',
+      'I never wanted to come back up',
+      'That was magical',
+      'I want to go again!'
+    ]},
+    { name: 'Rough Waters', color: '--p5', phrases: [
+      'Water crept into my mask',
+      'I swallowed a mouthful of sea',
+      'The current tugged me like a stubborn hand',
+      'The waves tossed me around',
+      'My legs grew tired and heavy',
+      'I felt small in the big blue',
+      'The cold seeped into my bones',
+      'I got stung and it burned',
+      'The sun scorched my back',
+      'I felt seasick and dizzy',
+      'The dark water made me nervous',
+      'I couldn’t catch my breath',
+      'My mask pinched my face',
+      'The reef looked broken and pale',
+      'I was glad to reach the shore'
+    ]}
+  ];
+
+  var DWELL_OPTIONS = [
+    { label: 'Off (click only)', ms: 0 },
+    { label: '0.8 s', ms: 800 },
+    { label: '1.2 s', ms: 1200 },
+    { label: '1.8 s', ms: 1800 },
+    { label: '2.5 s', ms: 2500 },
+    { label: '3.5 s', ms: 3500 }
+  ];
+  var VOICE_OPTIONS = [
+    { label: 'Speak aloud', on: true },
+    { label: 'Silent (show only)', on: false }
+  ];
+
+  var state = { page: 0, dwellMs: 1200, voice: true, last: '' };
+  try {
+    var saved = JSON.parse(localStorage.getItem('snorkel-talk') || '{}');
+    if (typeof saved.dwellMs === 'number') state.dwellMs = saved.dwellMs;
+    if (typeof saved.voice === 'boolean') state.voice = saved.voice;
+    if (typeof saved.page === 'number' && saved.page >= 0 && saved.page < PAGES.length) state.page = saved.page;
+  } catch (e) {}
+  function save() {
+    try { localStorage.setItem('snorkel-talk', JSON.stringify({ dwellMs: state.dwellMs, voice: state.voice, page: state.page })); } catch (e) {}
+  }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var board = $('board'), tabs = $('tabs'), said = $('said'), overlay = $('overlay');
+
+  // ---------- speech ----------
+  function speak(text) {
+    if (!state.voice || !('speechSynthesis' in window)) return;
+    try {
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.9;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  function say(text, tile) {
+    state.last = text;
+    said.textContent = text;
+    said.classList.remove('empty');
+    speak(text);
+    Array.prototype.forEach.call(board.querySelectorAll('.chosen'), function (t) { t.classList.remove('chosen'); });
+    if (tile) tile.classList.add('chosen');
+  }
+
+  // ---------- dwell selection ----------
+  // Each dwellable fires once per gaze visit; the gaze must leave before it can fire again.
+  var dwellTimer = null, dwellEl = null, lastFire = 0;
+
+  function cancelDwell() {
+    clearTimeout(dwellTimer);
+    dwellTimer = null;
+    if (dwellEl) dwellEl.classList.remove('dwelling');
+    dwellEl = null;
+  }
+
+  function fire(el) {
+    lastFire = Date.now();
+    el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit');
+    el._action();
+  }
+
+  function makeDwellable(el, action) {
+    el._action = action;
+    el.classList.add('dwellable');
+    el.addEventListener('pointerenter', function (ev) {
+      if (ev.pointerType === 'touch') return;
+      if (!state.dwellMs || el._spent) return;
+      cancelDwell();
+      dwellEl = el;
+      el.style.setProperty('--dwell-ms', state.dwellMs + 'ms');
+      void el.offsetWidth;
+      el.classList.add('dwelling');
+      dwellTimer = setTimeout(function () {
+        el.classList.remove('dwelling');
+        el._spent = true;
+        dwellEl = null;
+        fire(el);
+      }, state.dwellMs);
+    });
+    el.addEventListener('pointerleave', function () {
+      el._spent = false;
+      if (dwellEl === el) cancelDwell();
+    });
+    el.addEventListener('click', function () {
+      // ignore the OS click that some eye trackers send right after our own dwell fired
+      if (Date.now() - lastFire < 600) return;
+      cancelDwell();
+      el._spent = true;
+      fire(el);
+    });
+  }
+
+  // ---------- rendering ----------
+  function renderTabs() {
+    tabs.innerHTML = '';
+    PAGES.forEach(function (p, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tab';
+      b.style.setProperty('--tab-color', 'var(' + p.color + ')');
+      b.innerHTML = p.name + '<small>page ' + (i + 1) + ' of ' + PAGES.length + '</small>';
+      makeDwellable(b, function () { goTo(i); });
+      tabs.appendChild(b);
+    });
+  }
+
+  function renderPage() {
+    var p = PAGES[state.page];
+    board.style.setProperty('--page-color', 'var(' + p.color + ')');
+    board.setAttribute('aria-label', p.name + ' phrases');
+    board.innerHTML = '';
+    p.phrases.forEach(function (text) {
+      var t = document.createElement('button');
+      t.type = 'button';
+      t.className = 'tile';
+      t.textContent = text;
+      if (text === state.last) t.classList.add('chosen');
+      makeDwellable(t, function () { say(text, t); });
+      board.appendChild(t);
+    });
+    Array.prototype.forEach.call(tabs.children, function (b, i) {
+      b.setAttribute('aria-current', i === state.page ? 'true' : 'false');
+    });
+  }
+
+  function goTo(i) {
+    cancelDwell();
+    state.page = (i + PAGES.length) % PAGES.length;
+    save();
+    renderPage();
+  }
+
+  function renderChoices(container, options, isOn, onPick) {
+    container.innerHTML = '';
+    options.forEach(function (o) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'choice';
+      b.textContent = o.label;
+      b.setAttribute('aria-pressed', isOn(o) ? 'true' : 'false');
+      makeDwellable(b, function () { onPick(o); renderSettings(); });
+      container.appendChild(b);
+    });
+  }
+
+  function renderSettings() {
+    renderChoices($('dwell-choices'), DWELL_OPTIONS,
+      function (o) { return o.ms === state.dwellMs; },
+      function (o) { state.dwellMs = o.ms; save(); });
+    renderChoices($('voice-choices'), VOICE_OPTIONS,
+      function (o) { return o.on === state.voice; },
+      function (o) { state.voice = o.on; save(); });
+    $('dwell-status').textContent = state.dwellMs ? 'dwell ' + (state.dwellMs / 1000) + ' s' : 'click only';
+  }
+
+  makeDwellable($('prev'), function () { goTo(state.page - 1); });
+  makeDwellable($('next'), function () { goTo(state.page + 1); });
+  makeDwellable($('again'), function () { if (state.last) speak(state.last); });
+  makeDwellable($('settings'), function () { cancelDwell(); overlay.hidden = false; });
+  makeDwellable($('start'), function () {
+    cancelDwell();
+    overlay.hidden = true;
+    // a silent utterance inside the click unlocks speech for later dwell selections
+    if (state.voice && 'speechSynthesis' in window) {
+      try { var u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch (e) {}
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (!overlay.hidden) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') goTo(state.page + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') goTo(state.page - 1);
+  });
+
+  renderTabs();
+  renderSettings();
+  renderPage();
+})();
+</script>
