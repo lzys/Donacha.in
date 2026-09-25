@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="theme-color" content="#0b1220" />
+    <link rel="icon" href="data:," />
+    <title>Gaze Reply</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0b1220;
+        overflow: hidden;
+      }
+      #scene-container {
+        position: fixed;
+        inset: 0;
+      }
+      .overlay {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        font: 14px ui-monospace, Menlo, Consolas, monospace;
+        color: #9fb3c8;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 6px 12px;
+        border-radius: 8px;
+        pointer-events: none;
+        white-space: nowrap;
+        max-width: 96vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #speech-hint {
+        bottom: 16px;
+        color: #ffd166;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="scene-container"></div>
+    <div id="speech-hint" class="overlay">
+      Click once anywhere to enable spoken answers
+    </div>
+    <script type="module" src="/src/index.ts"></script>
+  </body>
+</html>
