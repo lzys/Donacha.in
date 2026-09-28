@@ -15,6 +15,33 @@ in a normal desktop browser.
 
 ---
 
+## Try it without installing anything
+
+Once GitHub Pages is switched on (see below), anyone can open:
+
+**https://lzys.github.io/Donacha.in/**
+
+- **On a computer (Chrome or Edge):** Click once on the background so speech
+  can play. Rest the mouse on an answer for 2 seconds. To try eye-gaze
+  simulation, click **Enter XR** and choose **Gaze + Hands** in the emulator's
+  input menu. The mouse cursor then acts as the eyes.
+- **On Meta VR Glasses or a Quest:** Open the same link in the headset
+  browser. A helper taps **Enter XR** once, then the user answers by looking.
+  The built-in emulator switches itself off on headset browsers, so the real
+  eye tracking is used.
+
+### One-time setup for the repository owner (no command line)
+
+1. On GitHub, open the repository → **Settings → Pages**. Under **Build and
+   deployment → Source**, choose **GitHub Actions**.
+2. Open **Actions → Deploy Gaze Reply to GitHub Pages → Run workflow**. It also
+   runs by itself on every push that changes `gaze-reply/`.
+3. After about 2 minutes, the link above is live.
+
+If the deploy step says the branch is "not allowed to deploy to github-pages",
+either merge this work into `main`, or add the branch under **Settings →
+Environments → github-pages → Deployment branches**.
+
 ## Run it (one command)
 
 Requires Node.js 20.19+ or 22.12+.
