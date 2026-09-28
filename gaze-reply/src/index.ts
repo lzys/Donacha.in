@@ -17,10 +17,9 @@ World.create(
   projectOptions,
 ).then((world) => {
   world.registerSystem(GazeReplySystem);
-  if (import.meta.env.DEV) {
-    // Handy for poking at state from the browser console during testing.
-    (window as any).gazeReply = { world, system: world.getSystem(GazeReplySystem) };
-  }
+  // Handy for poking at state from the browser console (or remote DevTools
+  // on the headset) and used by tests/dwell.e2e.mjs.
+  (window as any).gazeReply = { world, system: world.getSystem(GazeReplySystem) };
 
   // When installed as a PWA on the headset there is no 2D page to click, so
   // enter XR straight away (the app-icon tap is the user activation). This
